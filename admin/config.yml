@@ -1,0 +1,122 @@
+# Pannello di gestione del sito. Si apre su https://<indirizzo-del-sito>/admin/
+backend:
+  name: github
+  repo: scalatoreluigi/sito-progetto-vera-
+  branch: main
+
+media_folder: images/uploads
+public_folder: /images/uploads
+locale: it
+
+collections:
+  - name: sito
+    label: Contenuti del sito
+    editor: { preview: false }
+    files:
+      - name: impostazioni
+        label: "⚙️ Impostazioni, contatti, IBAN, PayPal"
+        file: content/impostazioni.json
+        fields:
+          - { name: nome, label: Nome associazione }
+          - { name: slogan, label: Frase di benvenuto, widget: text }
+          - { name: email, label: Email }
+          - { name: telefono, label: Telefono, required: false }
+          - { name: sede, label: Sede }
+          - { name: codice_fiscale, label: Codice fiscale associazione, required: false }
+          - { name: facebook, label: Link pagina Facebook }
+          - { name: instagram, label: Link profilo Instagram }
+          - { name: iban, label: "IBAN (controlla che sia quello di Progetto Vera!)", required: false }
+          - { name: intestatario_iban, label: Intestatario del conto, required: false }
+          - { name: causale, label: Causale suggerita }
+          - { name: paypal_email, label: "Email del conto PayPal che riceve i pagamenti", required: false }
+          - { name: cinque_per_mille, label: "Codice fiscale per il 5×1000 (vuoto = nascosto)", required: false }
+
+      - name: chi-siamo
+        label: "👨‍👩‍👧 Chi siamo"
+        file: content/chi-siamo.json
+        fields:
+          - { name: titolo, label: Titolo }
+          - { name: storia, label: "La nostra storia (lascia una riga vuota tra i paragrafi)", widget: text }
+          - name: numeri
+            label: Numeri in evidenza
+            widget: list
+            fields:
+              - { name: valore, label: Numero }
+              - { name: etichetta, label: Descrizione }
+          - name: amici
+            label: Associazioni amiche
+            widget: list
+            fields:
+              - { name: nome, label: Nome }
+              - { name: descrizione, label: Descrizione, widget: text }
+              - { name: link, label: Link, required: false }
+
+      - name: terapie
+        label: "🩺 Terapie e terapisti"
+        file: content/terapie.json
+        fields:
+          - name: terapie
+            label: Terapie
+            widget: list
+            fields:
+              - { name: nome, label: Nome terapia }
+              - { name: descrizione, label: Descrizione, widget: text }
+              - { name: immagine, label: Immagine, widget: image, required: false }
+          - name: terapisti
+            label: Terapisti
+            widget: list
+            fields:
+              - { name: nome, label: Nome e cognome }
+              - { name: ruolo, label: Ruolo }
+              - { name: provenienza, label: Provenienza, required: false }
+              - { name: descrizione, label: Presentazione, widget: text }
+              - { name: foto, label: Foto, widget: image, required: false }
+              - { name: link, label: Sito web, required: false }
+
+      - name: trasparenza
+        label: "📊 Trasparenza: entrate e uscite"
+        file: content/trasparenza.json
+        fields:
+          - { name: nota, label: Nota introduttiva, widget: text }
+          - name: movimenti
+            label: Movimenti
+            label_singular: movimento
+            widget: list
+            summary: "{{data}} · {{tipo}} · {{importo}} € · {{descrizione}}"
+            fields:
+              - { name: data, label: Data, widget: datetime, format: "YYYY-MM-DD", time_format: false }
+              - { name: tipo, label: Tipo, widget: select, options: [ { label: "Entrata (donazione, evento…)", value: entrata }, { label: "Uscita (terapia, attrezzatura…)", value: uscita } ] }
+              - { name: descrizione, label: "Descrizione (mai nomi dei bambini: usa codici famiglia)" }
+              - { name: importo, label: Importo in euro, widget: number, value_type: float, min: 0 }
+              - { name: documento, label: "Ricevuta/fattura (PDF o foto, senza dati sensibili)", widget: file, required: false }
+
+      - name: sponsor
+        label: "🤝 Sponsor"
+        file: content/sponsor.json
+        fields:
+          - name: sponsor
+            label: Sponsor
+            widget: list
+            fields:
+              - { name: nome, label: Nome }
+              - { name: descrizione, label: Descrizione, widget: text, required: false }
+              - { name: logo, label: Logo, widget: image, required: false }
+              - { name: sito, label: Sito web, required: false }
+              - { name: livello, label: Livello, widget: select, options: [oro, argento, bronzo], default: bronzo }
+
+      - name: shop
+        label: "🛍️ Shop"
+        file: content/shop.json
+        fields:
+          - { name: nota, label: "Nota (ritiro/spedizione)", widget: text }
+          - name: prodotti
+            label: Prodotti
+            widget: list
+            summary: "{{nome}} – {{prezzo}} €"
+            fields:
+              - { name: nome, label: Nome }
+              - { name: descrizione, label: Descrizione, widget: text }
+              - { name: prezzo, label: Prezzo in euro, widget: number, value_type: float, min: 0 }
+              - { name: immagine, label: Foto, widget: image, required: false }
+              - { name: varianti, label: "Varianti separate da virgola (es. S, M, L)", required: false }
+              - { name: disponibile, label: Disponibile, widget: boolean, default: true }

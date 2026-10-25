@@ -1,0 +1,7 @@
+{
+  "nota": "Tutto il ricavato va alle terapie dei bambini. Ritiro a mano o spedizione da concordare: dopo il pagamento ti contattiamo.",
+  "prodotti": [
+    { "nome": "Pandoro solidale", "descrizione": "Pandoro artigianale da 1 kg.", "prezzo": 15, "immagine": "", "disponibile": true },
+    { "nome": "Maglietta Progetto Vera", "descrizione": "100% cotone, taglie dalla S alla XXL.", "prezzo": 20, "immagine": "", "disponibile": true, "varianti": "S, M, L, XL, XXL" }
+  ]
+}

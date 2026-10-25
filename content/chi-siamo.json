@@ -1,0 +1,13 @@
+{
+  "titolo": "Chi siamo",
+  "storia": "Vera è nata al Niguarda di Milano con una forma grave di spina bifida. Mamma Francesca e papà Simone hanno scelto di puntare tutto sulla riabilitazione, in accordo con i medici del San Bortolo di Vicenza che la seguono.\n\nPresto hanno scoperto che non erano soli: oggi la nostra rete riunisce circa 25 famiglie di bambini con spina bifida o paralisi cerebrale, da Veneto, Lombardia, Puglia e Lazio.\n\nInvece di affrontare viaggi costosi e complicati all'estero, facciamo arrivare in Italia fisioterapisti specializzati dagli Stati Uniti e dalla Francia: ogni settimana di terapie coinvolge otto famiglie, così otto bambini possono beneficiarne insieme.",
+  "numeri": [
+    { "valore": "25", "etichetta": "famiglie nella rete" },
+    { "valore": "8", "etichetta": "bambini per ogni settimana di terapie" },
+    { "valore": "4", "etichetta": "regioni coinvolte" }
+  ],
+  "amici": [
+    { "nome": "Un Sorriso Solidale – Malcesine", "descrizione": "Associazione che sostiene il Progetto Vera e altri bambini del territorio.", "link": "https://www.comunemalcesine.it/amministrazione/enti-e-fondazioni/un-sorriso-solidale" },
+    { "nome": "Le Musagne – Rivoli Veronese", "descrizione": "Gruppo di cittadini che organizza eventi di raccolta fondi per le nostre famiglie.", "link": "" }
+  ]
+}
