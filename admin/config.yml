@@ -1,7 +1,7 @@
 # Pannello di gestione del sito. Si apre su https://<indirizzo-del-sito>/admin/
 backend:
   name: github
-  repo: scalatoreluigi/sito-progetto-vera-
+  repo: scalatoreluigi/Sito-progetto-vera-
   branch: main
 
 media_folder: images/uploads

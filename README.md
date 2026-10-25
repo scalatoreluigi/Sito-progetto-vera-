@@ -5,7 +5,7 @@ Tutti i testi stanno nei file `content/*.json` e si modificano dal pannello **/a
 
 ## 1. Mettere online il sito (una volta sola)
 1. Su GitHub: **Settings → Pages → Source: Deploy from a branch → `main` / root**.
-2. Dopo un minuto il sito è su `https://scalatoreluigi.github.io/sito-progetto-vera-/`.
+2. Dopo un minuto il sito è su `https://scalatoreluigi.github.io/Sito-progetto-vera-/`.
 3. (Consigliato) compra un dominio tipo `progettovera.it` (~10 €/anno) e collegalo in Settings → Pages → Custom domain.
 
 ## 2. Gestire i contenuti
