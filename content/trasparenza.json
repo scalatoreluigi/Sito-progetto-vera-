@@ -1,7 +1,19 @@
 {
-  "nota": "Pubblichiamo ogni entrata e ogni uscita. Per tutelare la privacy dei bambini usiamo solo un codice famiglia, mai nomi o diagnosi. Le ricevute sono disponibili su richiesta.",
+  "nota": "Pubblichiamo ogni entrata e ogni uscita. Per tutelare i bambini non pubblichiamo mai nomi, diagnosi o dati sanitari: le ricevute vengono oscurate prima di essere caricate.",
   "movimenti": [
-    { "data": "2025-07-05", "tipo": "entrata", "descrizione": "ESEMPIO – Festa di raccolta fondi con Le Musagne", "importo": 1500, "documento": "" },
-    { "data": "2025-07-20", "tipo": "uscita", "descrizione": "ESEMPIO – Settimana di terapie CME (8 bambini)", "importo": 1200, "documento": "" }
+    {
+      "data": "2025-07-05",
+      "tipo": "entrata",
+      "descrizione": "ESEMPIO – Festa di raccolta fondi con Le Musagne",
+      "importo": 1500,
+      "documento": ""
+    },
+    {
+      "data": "2025-07-20",
+      "tipo": "uscita",
+      "descrizione": "ESEMPIO – Settimana di terapie CME (8 bambini)",
+      "importo": 1200,
+      "documento": ""
+    }
   ]
 }

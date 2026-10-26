@@ -34,6 +34,8 @@ img { max-width: 100%; display: block; }
 .wrap.section { padding-left: 16px; padding-right: 16px; }
 .alt { background: var(--bg-alt); }
 .mt { margin-top: 56px; }
+.mb { margin-bottom: 40px; }
+.gallery figure { margin: 0; }
 .muted { color: var(--muted); }
 .small { font-size: .9rem; }
 

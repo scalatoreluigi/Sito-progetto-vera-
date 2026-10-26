@@ -42,6 +42,8 @@
         <div id="storia" class="prose"></div>
         <div id="numeri" class="stats"></div>
       </div>
+      <h3>Il consiglio direttivo</h3>
+      <div id="direttivo" class="grid mb"></div>
       <h3>I nostri amici</h3>
       <div id="amici" class="grid"></div>
     </section>
@@ -53,6 +55,11 @@
         <h2 class="mt">I terapisti che ruotano intorno a noi</h2>
         <div id="lista-terapisti" class="grid"></div>
       </div>
+    </section>
+
+    <section id="galleria" class="wrap section" hidden>
+      <h2>I nostri momenti</h2>
+      <div id="foto" class="grid gallery"></div>
     </section>
 
     <section id="trasparenza" class="wrap section">
@@ -122,10 +129,12 @@
   <footer class="footer">
     <div class="wrap footer-grid">
       <div>
-        <strong data-bind="nome"></strong><br>
+        <strong data-bind="nome_legale"></strong><br>
         <span data-bind="sede"></span><br>
         <a id="mail" href="#"></a> <span data-bind="telefono"></span><br>
-        <span class="small" id="cf"></span>
+        <span class="small">PEC: <a id="pec" href="#"></a></span><br>
+        <span class="small" id="cf"></span><br>
+        <span class="small" data-bind="runts"></span>
       </div>
       <div class="social">
         <a id="fb" href="#" target="_blank" rel="noopener" aria-label="Facebook">

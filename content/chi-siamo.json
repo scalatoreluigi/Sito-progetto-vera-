@@ -1,13 +1,18 @@
 {
   "titolo": "Chi siamo",
-  "storia": "Vera è nata al Niguarda di Milano con una forma grave di spina bifida. Mamma Francesca e papà Simone hanno scelto di puntare tutto sulla riabilitazione, in accordo con i medici del San Bortolo di Vicenza che la seguono.\n\nPresto hanno scoperto che non erano soli: oggi la nostra rete riunisce circa 25 famiglie di bambini con spina bifida o paralisi cerebrale, da Veneto, Lombardia, Puglia e Lazio.\n\nInvece di affrontare viaggi costosi e complicati all'estero, facciamo arrivare in Italia fisioterapisti specializzati dagli Stati Uniti e dalla Francia: ogni settimana di terapie coinvolge otto famiglie, così otto bambini possono beneficiarne insieme.",
+  "storia": "Tutto è nato da Vera, una bambina di Caprino Veronese nata con una forma grave di spina bifida. Mamma Francesca e papà Simone hanno scelto di puntare sulla riabilitazione e, cercando nel mondo le terapie più efficaci, hanno scoperto metodi come DMI e CME, ancora poco diffusi in Italia.\n\nNel giugno 2024 la prima terapista è arrivata dagli Stati Uniti per una settimana di sessioni intensive. Da allora, invece di costringere le famiglie a viaggi costosi all'estero, portiamo i terapisti qui e condividiamo i cicli di terapia tra più bambini: costi divisi, risultati moltiplicati.\n\nQuello che era un gruppo di genitori oggi è un'associazione: dal 2026 Progetto Vera e i suoi amici è un Ente del Terzo Settore iscritto al RUNTS, e la nostra rete conta circa 90 famiglie di bambini con spina bifida, paralisi cerebrale e altre disabilità motorie.",
   "numeri": [
-    { "valore": "25", "etichetta": "famiglie nella rete" },
-    { "valore": "8", "etichetta": "bambini per ogni settimana di terapie" },
-    { "valore": "4", "etichetta": "regioni coinvolte" }
+    { "valore": "90", "etichetta": "famiglie nella rete" },
+    { "valore": "2024", "etichetta": "primo ciclo di terapie in Italia" },
+    { "valore": "100%", "etichetta": "dei fondi rendicontati pubblicamente" }
+  ],
+  "direttivo": [
+    { "nome": "Simone Scala", "ruolo": "Presidente" },
+    { "nome": "Mariateresa Burato", "ruolo": "Vicepresidente" },
+    { "nome": "Nicola Cobelli", "ruolo": "Consigliere" }
   ],
   "amici": [
-    { "nome": "Un Sorriso Solidale – Malcesine", "descrizione": "Associazione che sostiene il Progetto Vera e altri bambini del territorio.", "link": "https://www.comunemalcesine.it/amministrazione/enti-e-fondazioni/un-sorriso-solidale" },
+    { "nome": "Un Sorriso Solidale – Malcesine", "descrizione": "Associazione che ha sostenuto il Progetto Vera fin dall'inizio.", "link": "https://www.comunemalcesine.it/amministrazione/enti-e-fondazioni/un-sorriso-solidale" },
     { "nome": "Le Musagne – Rivoli Veronese", "descrizione": "Gruppo di cittadini che organizza eventi di raccolta fondi per le nostre famiglie.", "link": "" }
   ]
 }

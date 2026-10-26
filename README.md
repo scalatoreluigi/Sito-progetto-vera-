@@ -27,11 +27,21 @@ Sezioni del pannello:
 Basta inserire in Impostazioni l'**email del conto PayPal** (meglio un conto Business intestato all'associazione).
 Finché è vuota, i pulsanti mostrano un avviso invece di pagare. Ogni ordine ti arriva via email da PayPal con nome, indirizzo e prodotto.
 
+## Dati ufficiali (fonte: RUNTS, verificati il 26/10/2026)
+- Denominazione: Associazione Progetto Vera e i suoi amici E.T.S. – sezione "Altri enti del Terzo Settore", ente non commerciale
+- C.F. e P.IVA 05163990236 – repertorio RUNTS n. 166318 – iscritta dal 15/05/2026 – accreditata al 5×1000
+- Sede: Via Tiro a Segno 9, 37013 Caprino Veronese (VR) – PEC associazioneprogettovera@pec.it
+- Direttivo (nomina 19/11/2025): Simone Scala (presidente), Mariateresa Burato (vicepresidente), Nicola Cobelli
+- Instagram: @progetto_vera
+
+## Privacy e foto
+Foto di terapisti e della galleria compaiono **solo** se nel pannello è spuntata la casella del consenso scritto.
+Le ricevute in Trasparenza vanno oscurate (nomi, diagnosi) prima del caricamento.
+
 ## Da completare prima di andare online
-- [ ] IBAN corretto **di Progetto Vera** (non quello di Un Sorriso Solidale `…0875`, che compare negli articoli di giornale)
-- [ ] Intestatario del conto e codice fiscale
-- [ ] Email di contatto, link Facebook e Instagram
-- [ ] Email PayPal
-- [ ] Terapisti reali (nomi, foto con consenso), foto prodotti, loghi sponsor
+- [ ] IBAN **dell'associazione** (NON `IT66B0503459771000000000875`: è di Un Sorriso Solidale e compare negli articoli del 2025)
+- [ ] Email ordinaria di contatto, link pagina Facebook
+- [ ] Email PayPal (conto Business intestato all'associazione)
+- [ ] Terapisti reali, foto prodotti, loghi sponsor
 - [ ] Sostituire i movimenti "ESEMPIO" in Trasparenza
-- [ ] Privacy policy e cookie (il sito non usa cookie propri; PayPal sì, al momento del pagamento)
+- [ ] Privacy policy (dati dei donatori e degli ordini)

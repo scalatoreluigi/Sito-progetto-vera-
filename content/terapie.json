@@ -1,11 +1,39 @@
 {
   "terapie": [
-    { "nome": "DMI – Dynamic Movement Intervention", "descrizione": "Metodo di fisioterapia che lavora su movimenti dinamici per stimolare risposte posturali e motorie, migliorando allineamento, forza e controllo del corpo.", "immagine": "" },
-    { "nome": "CME – Cuevas Medek Exercise", "descrizione": "Approccio fisioterapico che, con esercizi graduali e sfidanti contro la gravità, aiuta il bambino a sviluppare il controllo di testa, tronco e la capacità di stare in piedi e camminare.", "immagine": "" },
-    { "nome": "Stimolazione magnetica funzionale", "descrizione": "Trattamento quotidiano con un macchinario dedicato, usato per stimolare la vescica, ridurre la spasticità muscolare e migliorare l'equilibrio.", "immagine": "" }
+    {
+      "nome": "DMI – Dynamic Movement Intervention",
+      "descrizione": "Metodo di fisioterapia che lavora su movimenti dinamici per stimolare risposte posturali e motorie, migliorando allineamento, forza e controllo del corpo.",
+      "immagine": ""
+    },
+    {
+      "nome": "CME – Cuevas Medek Exercise",
+      "descrizione": "Approccio fisioterapico che, con esercizi graduali e sfidanti contro la gravità, aiuta il bambino a sviluppare il controllo di testa, tronco e la capacità di stare in piedi e camminare.",
+      "immagine": ""
+    },
+    {
+      "nome": "Metodo Feldenkrais",
+      "descrizione": "Lavoro dolce sulla consapevolezza del movimento: attraverso movimenti guidati il bambino scopre nuovi modi, più facili ed efficaci, di muoversi.",
+      "immagine": ""
+    }
   ],
   "terapisti": [
-    { "nome": "Nome Cognome", "ruolo": "Fisioterapista DMI", "provenienza": "Stati Uniti", "descrizione": "Breve presentazione del terapista.", "foto": "", "link": "" },
-    { "nome": "Nome Cognome", "ruolo": "Fisioterapista CME", "provenienza": "Francia", "descrizione": "Breve presentazione del terapista.", "foto": "", "link": "" }
+    {
+      "nome": "Nome Cognome",
+      "ruolo": "Fisioterapista DMI",
+      "provenienza": "Stati Uniti",
+      "descrizione": "Breve presentazione del terapista.",
+      "foto": "",
+      "link": "",
+      "consenso_foto": false
+    },
+    {
+      "nome": "Nome Cognome",
+      "ruolo": "Fisioterapista CME",
+      "provenienza": "Francia",
+      "descrizione": "Breve presentazione del terapista.",
+      "foto": "",
+      "link": "",
+      "consenso_foto": false
+    }
   ]
 }

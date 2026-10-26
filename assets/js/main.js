@@ -46,20 +46,25 @@ function paypal(settings, itemName, amount, quantity = 1) {
 }
 
 function renderSettings(s) {
-  ['nome', 'slogan', 'sede', 'telefono', 'causale', 'intestatario_iban', 'cinque_per_mille'].forEach((k) => bind(k, s[k]));
+  ['nome', 'nome_legale', 'slogan', 'sede', 'telefono', 'causale', 'intestatario_iban', 'cinque_per_mille', 'runts'].forEach((k) => bind(k, s[k]));
   document.title = s.nome;
   $('#iban').textContent = s.iban || 'IBAN in arrivo';
   $('#copia-iban').hidden = !s.iban;
   $('#copia-iban').onclick = () => navigator.clipboard?.writeText(s.iban.replace(/\s/g, '')).then(() => { $('#copia-iban').textContent = 'Copiato!'; });
-  $('#mail').href = 'mailto:' + s.email;
-  $('#mail').textContent = s.email;
-  $('#cf').textContent = s.codice_fiscale ? 'C.F. ' + s.codice_fiscale : '';
+  $('#mail').href = 'mailto:' + (s.email || s.pec);
+  $('#mail').textContent = s.email || '';
+  $('#mail').hidden = !s.email;
+  $('#pec').href = 'mailto:' + s.pec;
+  $('#pec').textContent = s.pec;
+  $('#cf').textContent = s.codice_fiscale ? 'C.F. e P.IVA ' + s.codice_fiscale : '';
   $('#fb').href = s.facebook || '#';
+  $('#fb').hidden = !s.facebook;
   $('#ig').href = s.instagram || '#';
+  $('#ig').hidden = !s.instagram;
   $('#box-5x1000').hidden = !s.cinque_per_mille;
   $('#dona-paypal').onsubmit = (e) => {
     e.preventDefault();
-    paypal(s, 'Donazione – ' + s.nome, $('#importo-dono').value);
+    paypal(s, 'Erogazione liberale – ' + s.nome, $('#importo-dono').value);
   };
 }
 
@@ -68,6 +73,8 @@ function renderChiSiamo(c) {
   $('#storia').innerHTML = paragrafi(c.storia);
   $('#numeri').innerHTML = (c.numeri || []).map((n) => `
     <div class="stat"><span class="stat-num">${esc(n.valore)}</span><span class="stat-label">${esc(n.etichetta)}</span></div>`).join('');
+  $('#direttivo').innerHTML = (c.direttivo || []).map((p) => `
+    <div class="card"><span class="tag">${esc(p.ruolo)}</span><h3>${esc(p.nome)}</h3></div>`).join('');
   $('#amici').innerHTML = (c.amici || []).map((a) => `
     <div class="card">
       <h3>${a.link ? `<a href="${esc(a.link)}" target="_blank" rel="noopener">${esc(a.nome)}</a>` : esc(a.nome)}</h3>
@@ -84,12 +91,20 @@ function renderTerapie(t) {
     </div>`).join('');
   $('#lista-terapisti').innerHTML = (t.terapisti || []).map((x) => `
     <div class="card">
-      ${x.foto ? `<img class="foto" src="${esc(x.foto)}" alt="${esc(x.nome)}">` : ''}
+      ${x.foto && x.consenso_foto ? `<img class="foto" src="${esc(x.foto)}" alt="${esc(x.nome)}">` : ''}
       <span class="tag">${esc(x.ruolo)}${x.provenienza ? ' · ' + esc(x.provenienza) : ''}</span>
       <h3>${esc(x.nome)}</h3>
       <p class="muted">${esc(x.descrizione)}</p>
       ${x.link ? `<a href="${esc(x.link)}" target="_blank" rel="noopener">Scopri di più</a>` : ''}
     </div>`).join('');
+}
+
+// Mostra solo le foto per cui c'è il consenso scritto.
+function renderGalleria(g) {
+  const foto = (g.foto || []).filter((f) => f.immagine && f.consenso_scritto);
+  $('#galleria').hidden = !foto.length;
+  $('#foto').innerHTML = foto.map((f) => `
+    <figure class="card"><img src="${esc(f.immagine)}" alt="${esc(f.didascalia)}"><figcaption class="small muted">${esc(f.didascalia)}</figcaption></figure>`).join('');
 }
 
 function renderTrasparenza(t) {
@@ -168,12 +183,13 @@ async function init() {
   };
   document.querySelectorAll('.nav a').forEach((a) => { a.onclick = () => $('.nav').classList.remove('open'); });
 
-  const [settings, chi, terapie, trasparenza, sponsor, shop] = await Promise.all(
-    ['impostazioni', 'chi-siamo', 'terapie', 'trasparenza', 'sponsor', 'shop'].map(load)
+  const [settings, chi, terapie, galleria, trasparenza, sponsor, shop] = await Promise.all(
+    ['impostazioni', 'chi-siamo', 'terapie', 'galleria', 'trasparenza', 'sponsor', 'shop'].map(load)
   );
   renderSettings(settings);
   renderChiSiamo(chi);
   renderTerapie(terapie);
+  renderGalleria(galleria);
   renderTrasparenza(trasparenza);
   renderSponsor(sponsor);
   renderShop(shop, settings);

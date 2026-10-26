@@ -1,15 +1,18 @@
 {
   "nome": "Progetto Vera e i suoi amici",
+  "nome_legale": "Associazione Progetto Vera e i suoi amici E.T.S.",
   "slogan": "Una rete di famiglie che porta le terapie dove servono: vicino ai nostri bambini.",
-  "email": "DA-INSERIRE@esempio.it",
+  "email": "",
+  "pec": "associazioneprogettovera@pec.it",
   "telefono": "",
-  "sede": "Caprino Veronese (VR)",
-  "codice_fiscale": "",
-  "facebook": "https://www.facebook.com/",
-  "instagram": "https://www.instagram.com/",
+  "sede": "Via Tiro a Segno 9, 37013 Caprino Veronese (VR)",
+  "codice_fiscale": "05163990236",
+  "runts": "Iscritta al RUNTS – Registro Unico Nazionale del Terzo Settore, repertorio n. 166318",
+  "facebook": "",
+  "instagram": "https://www.instagram.com/progetto_vera/",
   "iban": "",
-  "intestatario_iban": "",
-  "causale": "Donazione Progetto Vera",
+  "intestatario_iban": "Associazione Progetto Vera e i suoi amici E.T.S.",
+  "causale": "Erogazione liberale a favore di Progetto Vera e i suoi amici ETS",
   "paypal_email": "",
-  "cinque_per_mille": ""
+  "cinque_per_mille": "05163990236"
 }

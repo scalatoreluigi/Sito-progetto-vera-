@@ -18,13 +18,16 @@ collections:
         file: content/impostazioni.json
         fields:
           - { name: nome, label: Nome associazione }
+          - { name: nome_legale, label: Denominazione ufficiale (come sul RUNTS) }
           - { name: slogan, label: Frase di benvenuto, widget: text }
-          - { name: email, label: Email }
+          - { name: email, label: Email, required: false }
+          - { name: pec, label: PEC }
           - { name: telefono, label: Telefono, required: false }
           - { name: sede, label: Sede }
           - { name: codice_fiscale, label: Codice fiscale associazione, required: false }
-          - { name: facebook, label: Link pagina Facebook }
-          - { name: instagram, label: Link profilo Instagram }
+          - { name: runts, label: Dicitura iscrizione RUNTS, required: false }
+          - { name: facebook, label: "Link pagina Facebook (vuoto = icona nascosta)", required: false }
+          - { name: instagram, label: "Link profilo Instagram (vuoto = icona nascosta)", required: false }
           - { name: iban, label: "IBAN (controlla che sia quello di Progetto Vera!)", required: false }
           - { name: intestatario_iban, label: Intestatario del conto, required: false }
           - { name: causale, label: Causale suggerita }
@@ -43,6 +46,12 @@ collections:
             fields:
               - { name: valore, label: Numero }
               - { name: etichetta, label: Descrizione }
+          - name: direttivo
+            label: Consiglio direttivo
+            widget: list
+            fields:
+              - { name: nome, label: Nome e cognome }
+              - { name: ruolo, label: Ruolo }
           - name: amici
             label: Associazioni amiche
             widget: list
@@ -71,7 +80,21 @@ collections:
               - { name: provenienza, label: Provenienza, required: false }
               - { name: descrizione, label: Presentazione, widget: text }
               - { name: foto, label: Foto, widget: image, required: false }
+              - { name: consenso_foto, label: "Ho il consenso scritto a pubblicare la foto", widget: boolean, default: false }
               - { name: link, label: Sito web, required: false }
+
+      - name: galleria
+        label: "📷 Galleria foto"
+        file: content/galleria.json
+        fields:
+          - name: foto
+            label: Foto
+            widget: list
+            summary: "{{didascalia}}"
+            fields:
+              - { name: immagine, label: Foto, widget: image }
+              - { name: didascalia, label: "Didascalia (niente diagnosi)", required: false }
+              - { name: consenso_scritto, label: "Consenso scritto firmato dai genitori di TUTTI i bambini visibili (senza spunta la foto non viene pubblicata)", widget: boolean, default: false }
 
       - name: trasparenza
         label: "📊 Trasparenza: entrate e uscite"
