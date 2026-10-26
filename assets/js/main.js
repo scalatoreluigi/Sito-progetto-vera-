@@ -54,6 +54,7 @@ function renderSettings(s) {
   $('#mail').href = 'mailto:' + (s.email || s.pec);
   $('#mail').textContent = s.email || '';
   $('#mail').hidden = !s.email;
+  $('#volontario').href = 'mailto:' + s.email + '?subject=' + encodeURIComponent('Voglio diventare volontario');
   $('#pec').href = 'mailto:' + s.pec;
   $('#pec').textContent = s.pec;
   $('#cf').textContent = s.codice_fiscale ? 'C.F. e P.IVA ' + s.codice_fiscale : '';

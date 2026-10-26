@@ -39,9 +39,7 @@ Foto di terapisti e della galleria compaiono **solo** se nel pannello è spuntat
 Le ricevute in Trasparenza vanno oscurate (nomi, diagnosi) prima del caricamento.
 
 ## Da completare prima di andare online
-- [ ] IBAN **dell'associazione** (NON `IT66B0503459771000000000875`: è di Un Sorriso Solidale e compare negli articoli del 2025)
-- [ ] Email ordinaria di contatto, link pagina Facebook
-- [ ] Email PayPal (conto Business intestato all'associazione)
+- [x] IBAN, email, Facebook, PayPal inseriti (26/10/2026)
 - [ ] Terapisti reali, foto prodotti, loghi sponsor
 - [ ] Sostituire i movimenti "ESEMPIO" in Trasparenza
 - [ ] Privacy policy (dati dei donatori e degli ordini)
