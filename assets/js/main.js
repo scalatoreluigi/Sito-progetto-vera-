@@ -177,6 +177,16 @@ function renderShop(shop, settings) {
   };
 }
 
+// La sezione compare solo quando nel pannello è inserito l'indirizzo dell'area (vedi area-infermieri/LEGGIMI.md).
+function renderInfermieri(s) {
+  const url = /^https:\/\//.test(s.url_area_infermieri || '') ? s.url_area_infermieri : '';
+  $('#infermieri').hidden = !url;
+  $('.link-infermieri').hidden = !url;
+  if (!url) return;
+  $('#link-adesione').href = url + '?p=adesione';
+  $('#link-famiglie').href = url;
+}
+
 async function init() {
   $('.menu-btn').onclick = () => {
     const open = $('.nav').classList.toggle('open');
@@ -194,6 +204,7 @@ async function init() {
   renderTrasparenza(trasparenza);
   renderSponsor(sponsor);
   renderShop(shop, settings);
+  renderInfermieri(settings);
 
   if (location.hash === '#grazie') alert('Grazie di cuore! Il pagamento è andato a buon fine: ti contatteremo a breve.');
 }

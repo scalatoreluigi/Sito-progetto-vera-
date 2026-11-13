@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <?!= include('Stile') ?>
+</head>
+<body>
+<main class="wrap">
+  <p class="eyebrow"><?= ente.nome ?></p>
+  <h1>Infermieri per le famiglie</h1>
+  <p>Le famiglie della nostra associazione hanno bambini che a scuola o a casa hanno bisogno di prestazioni infermieristiche,
+    come il cateterismo intermittente o le iniezioni. Se sei infermiere e vuoi renderti disponibile, iscriviti qui:
+    dopo la verifica il tuo profilo sarà visibile <strong>solo alle famiglie associate</strong>, che ti contatteranno direttamente.</p>
+  <p class="clausola small"><?= clausola ?></p>
+
+  <form id="modulo" novalidate>
+    <fieldset>
+      <legend>I tuoi dati</legend>
+      <div class="griglia">
+        <div><label for="nome">Nome *</label><input type="text" id="nome" name="nome" maxlength="60" required autocomplete="given-name"></div>
+        <div><label for="cognome">Cognome *</label><input type="text" id="cognome" name="cognome" maxlength="60" required autocomplete="family-name"></div>
+        <div><label for="telefono">Telefono *</label><input type="tel" id="telefono" name="telefono" maxlength="30" required autocomplete="tel"></div>
+        <div><label for="email">Email *</label><input type="email" id="email" name="email" maxlength="120" required autocomplete="email"></div>
+        <div><label for="numeroOpi">Numero di iscrizione all'albo OPI *</label><input type="text" id="numeroOpi" name="numeroOpi" maxlength="20" required></div>
+        <div><label for="provinciaOpi">Provincia dell'Ordine *</label><input type="text" id="provinciaOpi" name="provinciaOpi" maxlength="40" required placeholder="Es. Verona"></div>
+      </div>
+      <p class="small muted">Sei in pensione? Puoi iscriverti solo se sei ancora iscritto all'albo: senza iscrizione non si può esercitare.</p>
+    </fieldset>
+
+    <fieldset>
+      <legend>Dove lavori *</legend>
+      <p class="small muted">Scegli i comuni in cui sei disponibile ad andare.</p>
+      <div id="comuni"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Cosa offri *</legend>
+      <div class="scelte" id="prestazioni"></div>
+      <div id="box-altro" hidden><label for="altraPrestazione">Quale altra prestazione?</label>
+        <input type="text" id="altraPrestazione" name="altraPrestazione" maxlength="200"></div>
+      <label>Dove *</label>
+      <div class="scelte" id="luoghi"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Disponibilità indicativa *</legend>
+      <label>Giorni</label><div class="scelte" id="giorni"></div>
+      <label>Fasce orarie</label><div class="scelte" id="fasce"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Assicurazione *</legend>
+      <p class="small muted">La polizza di responsabilità civile professionale è obbligatoria (Legge 24/2017).</p>
+      <label class="opt"><input type="radio" name="rc" value="Sì"> Ho una polizza RC professionale attiva</label>
+      <label class="opt"><input type="radio" name="rc" value="No"> Non ho una polizza RC professionale</label>
+      <div id="box-rc" hidden><label for="scadenzaRc">Data di scadenza della polizza</label><input type="date" id="scadenzaRc" name="scadenzaRc"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Facoltativo</legend>
+      <label for="presentazione">Breve presentazione</label>
+      <textarea id="presentazione" name="presentazione" maxlength="600"></textarea>
+      <label for="esperienzaPediatrica">Esperienza con bambini</label>
+      <input type="text" id="esperienzaPediatrica" name="esperienzaPediatrica" maxlength="300" placeholder="Es. 5 anni in pediatria">
+      <label for="tariffa">Tariffa indicativa</label>
+      <input type="text" id="tariffa" name="tariffa" maxlength="80" placeholder="Es. 25 € a prestazione">
+    </fieldset>
+
+    <fieldset>
+      <legend>Consensi *</legend>
+      <label class="opt"><input type="checkbox" name="consensoPrivacy"> Ho letto l'<a href="<?= url ?>?p=informativa" target="_blank">informativa privacy</a>.</label>
+      <label class="opt"><input type="checkbox" name="consensoContatti"> Acconsento che nome, telefono, email, numero di iscrizione OPI e le informazioni qui sopra siano mostrati alle famiglie associate a <?= ente.nome ?>. Posso revocare il consenso in ogni momento.</label>
+      <label class="opt"><input type="checkbox" name="dichiarazione"> Dichiaro di essere iscritto all'albo OPI e di avere una polizza RC professionale in corso di validità. Mi impegno a comunicare subito ogni variazione.</label>
+    </fieldset>
+
+    <div class="hp" aria-hidden="true"><label for="sitoWeb">Non compilare</label><input type="text" id="sitoWeb" name="sitoWeb" tabindex="-1" autocomplete="off"></div>
+    <div id="errori" class="errori" hidden></div>
+    <p><button type="submit" id="invia">Invia la mia adesione</button></p>
+  </form>
+  <div id="fatto" class="esito-ok" hidden>
+    <strong>Grazie!</strong> Abbiamo ricevuto la tua adesione e ti abbiamo mandato un'email di conferma.
+    Verificheremo albo e polizza e ti scriveremo quando il profilo sarà attivo.
+  </div>
+
+  <footer><?= ente.nomeLegale ?> · C.F. <?= ente.codiceFiscale ?> · <a href="mailto:<?= ente.email ?>"><?= ente.email ?></a></footer>
+</main>
+
+<script>
+  const OPZ = <?!= opzioniJson ?>;
+  const EMAIL = <?!= JSON.stringify(ente.email) ?>;
+  const $ = (s) => document.querySelector(s);
+  const esc = (v) => String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const opzione = (tipo, nome, valore) =>
+    `<label class="opt"><input type="${tipo}" name="${nome}" value="${esc(valore)}"> ${esc(valore)}</label>`;
+
+  $('#comuni').innerHTML = OPZ.zone.map((z, i) => `
+    <div class="zona">
+      <div class="zona-titolo">${esc(z.zona)} <button type="button" class="ghost" data-zona="${i}">Tutta la zona</button></div>
+      <div class="scelte">${z.comuni.map((c) => opzione('checkbox', 'comuni', c)).join('')}</div>
+    </div>`).join('');
+  $('#prestazioni').innerHTML = OPZ.prestazioni.map((p) => opzione('checkbox', 'prestazioni', p)).join('');
+  $('#luoghi').innerHTML = OPZ.luoghi.map((l) => opzione('radio', 'luogo', l)).join('');
+  $('#giorni').innerHTML = OPZ.giorni.map((g) => opzione('checkbox', 'giorni', g)).join('');
+  $('#fasce').innerHTML = OPZ.fasce.map((f) => opzione('checkbox', 'fasce', f)).join('');
+
+  $('#comuni').addEventListener('click', (e) => {
+    const i = e.target.dataset.zona;
+    if (i === undefined) return;
+    const caselle = e.target.closest('.zona').querySelectorAll('input');
+    const tutte = Array.from(caselle).every((c) => c.checked);
+    caselle.forEach((c) => { c.checked = !tutte; });
+  });
+  $('#modulo').addEventListener('change', () => {
+    $('#errori').hidden = true;
+    $('#box-altro').hidden = !document.querySelector('input[name=prestazioni][value="Altro"]:checked');
+    $('#box-rc').hidden = !document.querySelector('input[name=rc][value="Sì"]:checked');
+  });
+
+  function raccogli() {
+    const f = $('#modulo');
+    const valori = (nome) => Array.from(f.querySelectorAll(`input[name=${nome}]:checked`)).map((i) => i.value);
+    const dati = {};
+    ['nome', 'cognome', 'telefono', 'email', 'numeroOpi', 'provinciaOpi', 'altraPrestazione', 'scadenzaRc',
+      'presentazione', 'esperienzaPediatrica', 'tariffa', 'sitoWeb'].forEach((k) => { dati[k] = f.elements[k].value; });
+    ['comuni', 'prestazioni', 'giorni', 'fasce'].forEach((k) => { dati[k] = valori(k); });
+    dati.luogo = valori('luogo')[0] || '';
+    dati.rc = valori('rc')[0] || '';
+    ['consensoPrivacy', 'consensoContatti', 'dichiarazione'].forEach((k) => { dati[k] = f.elements[k].checked; });
+    return dati;
+  }
+
+  function mostraErrori(lista) {
+    $('#errori').hidden = !lista.length;
+    $('#errori').innerHTML = '<ul>' + lista.map((e) => `<li>${esc(e)}</li>`).join('') + '</ul>';
+    if (lista.length) $('#errori').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  $('#modulo').addEventListener('submit', (e) => {
+    e.preventDefault();
+    $('#invia').disabled = true;
+    google.script.run
+      .withSuccessHandler((r) => {
+        $('#invia').disabled = false;
+        if (!r.ok) return mostraErrori(r.errori);
+        $('#modulo').hidden = true;
+        $('#fatto').hidden = false;
+        window.scrollTo(0, 0);
+      })
+      .withFailureHandler(() => {
+        $('#invia').disabled = false;
+        mostraErrori(['Qualcosa è andato storto. Riprova fra qualche minuto o scrivici a ' + EMAIL + '.']);
+      })
+      .inviaAdesione(raccogli());
+  });
+</script>
+</body>
+</html>

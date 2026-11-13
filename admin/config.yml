@@ -33,6 +33,7 @@ collections:
           - { name: causale, label: Causale suggerita }
           - { name: paypal_email, label: "Email del conto PayPal che riceve i pagamenti", required: false }
           - { name: cinque_per_mille, label: "Codice fiscale per il 5×1000 (vuoto = nascosto)", required: false }
+          - { name: url_area_infermieri, label: "Indirizzo dell'area Infermieri per le famiglie (vuoto = sezione nascosta)", required: false, pattern: ["^(https://script\\.google\\.com/macros/s/[A-Za-z0-9_-]+/exec)?$", "Incolla l'indirizzo che finisce con /exec"] }
 
       - name: chi-siamo
         label: "👨‍👩‍👧 Chi siamo"

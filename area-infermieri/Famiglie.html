@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <?!= include('Stile') ?>
+</head>
+<body>
+<main class="wrap">
+  <p class="eyebrow"><?= ente.nome ?> · Area riservata alle famiglie</p>
+  <h1>Trova un infermiere</h1>
+  <p class="clausola small"><?= clausola ?></p>
+
+  <form id="accesso" class="card">
+    <label for="codice">Codice di accesso</label>
+    <p class="small muted">Il codice te lo dà l'associazione. Non condividerlo: protegge i contatti degli infermieri.</p>
+    <input type="text" id="codice" autocomplete="off" autocapitalize="characters" placeholder="XXXX-XXXX-XXXX" maxlength="20">
+    <div id="errore-codice" class="errori" hidden style="margin-top:10px">Codice non valido o non più attivo. Per un nuovo codice scrivi a <?= ente.email ?>.</div>
+    <p><button type="submit" id="entra">Entra</button></p>
+  </form>
+
+  <section id="ricerca" hidden>
+    <form id="filtri" class="card">
+      <div class="griglia">
+        <div><label for="comune">Comune</label><select id="comune"></select></div>
+        <div><label for="prestazione">Prestazione</label><select id="prestazione"></select></div>
+        <div><label for="luogo">Dove</label>
+          <select id="luogo"><option value="">Scuola o domicilio</option><option>Scuola</option><option>Domicilio</option></select></div>
+        <div><label for="giorno">Giorno</label><select id="giorno"></select></div>
+        <div><label for="fascia">Fascia oraria</label><select id="fascia"></select></div>
+      </div>
+      <p><button type="submit" id="cerca">Cerca</button></p>
+    </form>
+    <p id="conteggio" class="muted"></p>
+    <div id="risultati"></div>
+    <p class="small muted">I contatti sono riservati alle famiglie dell'associazione: non pubblicarli e non inoltrarli.
+      Prima di affidarti a un infermiere puoi controllare l'iscrizione all'albo con il numero OPI indicato.</p>
+  </section>
+
+  <footer><?= ente.nomeLegale ?> · <a href="<?= url ?>?p=informativa" target="_blank">Informativa privacy</a></footer>
+</main>
+
+<script>
+  const OPZ = <?!= opzioniJson ?>;
+  const $ = (s) => document.querySelector(s);
+  const esc = (v) => String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const opz = (lista, vuoto) => `<option value="">${vuoto}</option>` + lista.map((x) => `<option>${esc(x)}</option>`).join('');
+  let codice = '';
+
+  $('#comune').innerHTML = '<option value="">Tutti i comuni</option>' + OPZ.zone.map((z) =>
+    `<optgroup label="${esc(z.zona)}">${z.comuni.map((c) => `<option>${esc(c)}</option>`).join('')}</optgroup>`).join('');
+  $('#prestazione').innerHTML = opz(OPZ.prestazioni.filter((p) => p !== 'Altro'), 'Tutte');
+  $('#giorno').innerHTML = opz(OPZ.giorni, 'Qualsiasi');
+  $('#fascia').innerHTML = opz(OPZ.fasce, 'Qualsiasi');
+
+  // Il codice resta solo in questa scheda del browser: chiudendola bisogna reinserirlo.
+  try { codice = sessionStorage.getItem('codice') || ''; } catch (e) { codice = ''; }
+  if (codice) entra(codice);
+
+  $('#accesso').addEventListener('submit', (e) => { e.preventDefault(); entra($('#codice').value); });
+
+  function entra(c) {
+    $('#entra').disabled = true;
+    google.script.run.withSuccessHandler((r) => {
+      $('#entra').disabled = false;
+      if (!r.ok) {
+        try { sessionStorage.removeItem('codice'); } catch (e) {}
+        $('#errore-codice').hidden = false;
+        return;
+      }
+      codice = c;
+      try { sessionStorage.setItem('codice', c); } catch (e) {}
+      $('#accesso').hidden = true;
+      $('#ricerca').hidden = false;
+      cerca();
+    }).withFailureHandler(() => { $('#entra').disabled = false; $('#errore-codice').hidden = false; }).accediFamiglia(c);
+  }
+
+  $('#filtri').addEventListener('submit', (e) => { e.preventDefault(); cerca(); });
+
+  function cerca() {
+    const filtri = {};
+    ['comune', 'prestazione', 'luogo', 'giorno', 'fascia'].forEach((k) => { filtri[k] = $('#' + k).value; });
+    $('#cerca').disabled = true;
+    $('#conteggio').textContent = 'Ricerca in corso…';
+    google.script.run.withSuccessHandler((r) => {
+      $('#cerca').disabled = false;
+      if (!r.ok) { location.reload(); return; }
+      mostra(r.risultati);
+    }).withFailureHandler(() => {
+      $('#cerca').disabled = false;
+      $('#conteggio').textContent = 'Errore di collegamento: riprova.';
+    }).cercaInfermieri(codice, filtri);
+  }
+
+  function mostra(lista) {
+    $('#conteggio').textContent = lista.length
+      ? `${lista.length} infermier${lista.length === 1 ? 'e disponibile' : 'i disponibili'}`
+      : "Nessun infermiere corrisponde ai filtri. Prova ad allargare la ricerca o scrivi all'associazione: ti aiutiamo a trovarne uno.";
+    $('#risultati').innerHTML = lista.map((x) => `
+      <article class="card">
+        <h2 style="margin-top:0">${esc(x.nome)} ${esc(x.cognome)}</h2>
+        <p class="contatti"><a href="tel:${esc(x.telefono.replace(/[^\d+]/g, ''))}">${esc(x.telefono)}</a>
+          <a href="mailto:${esc(x.email)}">${esc(x.email)}</a></p>
+        <p>${x.prestazioni.map((p) => `<span class="tag">${esc(p)}</span>`).join('')}</p>
+        <p class="small"><strong>Dove:</strong> ${esc(x.luogo === 'Entrambi' ? 'scuola e domicilio' : x.luogo.toLowerCase())}
+          · <strong>Comuni:</strong> ${esc(x.comuni.join(', '))}</p>
+        <p class="small"><strong>Disponibilità:</strong> ${esc(x.giorni.join(', '))} · ${esc(x.fasce.join(', '))}</p>
+        ${x.esperienzaPediatrica ? `<p class="small"><strong>Esperienza con bambini:</strong> ${esc(x.esperienzaPediatrica)}</p>` : ''}
+        ${x.tariffa ? `<p class="small"><strong>Tariffa indicativa:</strong> ${esc(x.tariffa)}</p>` : ''}
+        ${x.presentazione ? `<p class="small muted">${esc(x.presentazione)}</p>` : ''}
+        <p class="small muted">Iscrizione OPI n. ${esc(x.numeroOpi)} – ${esc(x.provinciaOpi)}</p>
+      </article>`).join('');
+  }
+</script>
+</body>
+</html>

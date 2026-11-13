@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <?!= include('Stile') ?>
+</head>
+<body>
+<main class="wrap">
+  <p class="eyebrow"><?= ente.nome ?> · Infermieri per le famiglie</p>
+  <h1>Conferma i tuoi dati</h1>
+  <p id="caricamento" class="muted">Caricamento…</p>
+  <div id="non-valido" class="errori" hidden>Link non valido. Scrivi a <?= ente.email ?> per riceverne uno nuovo.</div>
+
+  <form id="modulo" hidden>
+    <p>Ciao <strong id="nome"></strong>, una volta l'anno ti chiediamo di confermare che i tuoi dati sono ancora validi.</p>
+    <fieldset>
+      <legend>Vuoi restare disponibile per le famiglie?</legend>
+      <label class="opt"><input type="radio" name="disponibile" value="si" checked> Sì, resto disponibile</label>
+      <label class="opt"><input type="radio" name="disponibile" value="no"> No, toglietemi dall'elenco</label>
+    </fieldset>
+    <fieldset id="conferme">
+      <legend>Conferme</legend>
+      <label class="opt"><input type="checkbox" name="confermaAlbo"> Sono ancora iscritto all'albo OPI.</label>
+      <label class="opt"><input type="checkbox" name="confermaContatti"> Confermo il consenso a mostrare i miei contatti alle famiglie associate.</label>
+      <label for="scadenzaRc">Scadenza della polizza RC professionale</label>
+      <input type="date" id="scadenzaRc" name="scadenzaRc">
+      <p class="small muted">Se la polizza è nuova, l'associazione la ricontrollerà prima di rendere di nuovo visibile il profilo.</p>
+    </fieldset>
+    <p class="small muted">Per cambiare comuni, prestazioni o orari scrivi a <a href="mailto:<?= ente.email ?>"><?= ente.email ?></a>.</p>
+    <div id="errori" class="errori" hidden></div>
+    <p><button type="submit" id="invia">Conferma</button></p>
+  </form>
+  <div id="fatto" class="esito-ok" hidden></div>
+</main>
+
+<script>
+  const TOKEN = <?!= JSON.stringify(token) ?>; // già ripulito sul server: solo cifre esadecimali e trattini
+  const $ = (s) => document.querySelector(s);
+  const esc = (v) => String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const f = $('#modulo');
+
+  google.script.run.withSuccessHandler((r) => {
+    $('#caricamento').hidden = true;
+    if (!r.ok) { $('#non-valido').hidden = false; return; }
+    $('#nome').textContent = r.nome;
+    f.elements.scadenzaRc.value = r.scadenzaRc;
+    f.hidden = false;
+  }).withFailureHandler(() => { $('#caricamento').hidden = true; $('#non-valido').hidden = false; }).datiRinnovo(TOKEN);
+
+  f.addEventListener('change', () => { $('#conferme').hidden = f.elements.disponibile.value === 'no'; });
+
+  f.addEventListener('submit', (e) => {
+    e.preventDefault();
+    $('#invia').disabled = true;
+    const dati = {
+      disponibile: f.elements.disponibile.value,
+      confermaAlbo: f.elements.confermaAlbo.checked,
+      confermaContatti: f.elements.confermaContatti.checked,
+      scadenzaRc: f.elements.scadenzaRc.value,
+    };
+    google.script.run.withSuccessHandler((r) => {
+      $('#invia').disabled = false;
+      if (!r.ok) {
+        $('#errori').hidden = false;
+        $('#errori').innerHTML = '<ul>' + r.errori.map((x) => `<li>${esc(x)}</li>`).join('') + '</ul>';
+        return;
+      }
+      f.hidden = true;
+      $('#fatto').hidden = false;
+      $('#fatto').textContent = dati.disponibile === 'no'
+        ? 'Fatto: il tuo profilo non è più visibile. Grazie per il tempo che ci hai dedicato.'
+        : r.stato === 'Attivo'
+          ? 'Grazie! I tuoi dati sono confermati per un altro anno.'
+          : "Grazie! L'associazione ricontrollerà la polizza e riattiverà il profilo: riceverai un'email.";
+    }).withFailureHandler(() => {
+      $('#invia').disabled = false;
+      $('#errori').hidden = false;
+      $('#errori').textContent = 'Errore di collegamento: riprova.';
+    }).inviaRinnovo(TOKEN, dati);
+  });
+</script>
+</body>
+</html>
