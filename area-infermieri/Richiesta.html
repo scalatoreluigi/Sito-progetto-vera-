@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <?!= include('Stile') ?>
+</head>
+<body>
+<main class="wrap">
+  <p class="eyebrow"><?= ente.nome ?> · Per le famiglie associate</p>
+  <h1>Chiedi un infermiere</h1>
+  <p>Dicci cosa serve e dove: un volontario ti richiama con i contatti di infermieri iscritti all'albo e assicurati, verificati da noi.</p>
+  <p class="clausola small"><?= clausola ?></p>
+
+  <form id="modulo" novalidate>
+    <fieldset>
+      <legend>Chi sei</legend>
+      <div class="griglia">
+        <div><label for="referente">Il tuo nome *</label><input type="text" id="referente" name="referente" maxlength="60" autocomplete="name"></div>
+        <div><label for="telefono">Telefono *</label><input type="tel" id="telefono" name="telefono" maxlength="30" autocomplete="tel"></div>
+      </div>
+      <label for="email">Email <span class="muted small">(facoltativa)</span></label>
+      <input type="email" id="email" name="email" maxlength="120" autocomplete="email">
+    </fieldset>
+
+    <fieldset>
+      <legend>Cosa serve</legend>
+      <label for="comune">Comune *</label>
+      <select id="comune" name="comune"></select>
+      <label>Prestazione *</label>
+      <div class="scelte" id="prestazioni"></div>
+      <div id="box-altro" hidden><label for="altraPrestazione">Quale?</label>
+        <input type="text" id="altraPrestazione" name="altraPrestazione" maxlength="200"></div>
+      <label>Dove *</label>
+      <div class="scelte">
+        <label class="opt"><input type="radio" name="luogo" value="Scuola"> A scuola</label>
+        <label class="opt"><input type="radio" name="luogo" value="Domicilio"> A casa</label>
+        <label class="opt"><input type="radio" name="luogo" value="Entrambi"> Tutti e due</label>
+      </div>
+      <label>Quando <span class="muted small">(facoltativo)</span></label>
+      <div class="scelte" id="giorni"></div>
+      <div class="scelte" id="fasce" style="margin-top:6px"></div>
+      <label for="note">Note <span class="muted small">(facoltativo: orari precisi, scuola sì/no autorizzata… niente diagnosi)</span></label>
+      <textarea id="note" name="note" maxlength="300"></textarea>
+    </fieldset>
+
+    <label class="opt card"><input type="checkbox" name="consenso">
+      <span>Acconsento che <?= ente.nome ?> usi questi dati, che riguardano anche la salute di mio figlio,
+        solo per cercarmi un infermiere. Quando la richiesta è chiusa la cancelliamo e teniamo solo un conteggio anonimo.
+        <a href="<?= url ?>?p=informativa" target="_blank">Informativa privacy</a>.</span></label>
+
+    <div class="hp" aria-hidden="true"><label for="sitoWeb">Non compilare</label><input type="text" id="sitoWeb" name="sitoWeb" tabindex="-1" autocomplete="off"></div>
+    <div id="errori" class="errori" hidden></div>
+    <p><button type="submit" id="invia">Invia la richiesta</button></p>
+    <p class="small muted">Preferisci scriverci? <a href="mailto:<?= ente.email ?>"><?= ente.email ?></a></p>
+  </form>
+
+  <div id="fatto" class="esito-ok" hidden>
+    <strong>Richiesta inviata.</strong> Un volontario ti richiamerà al numero che ci hai lasciato, di solito entro pochi giorni.
+    <span id="codice-richiesta"></span>
+  </div>
+
+  <footer><?= ente.nomeLegale ?> · C.F. <?= ente.codiceFiscale ?></footer>
+</main>
+
+<script>
+  const OPZ = <?!= opzioniJson ?>;
+  const EMAIL = <?!= JSON.stringify(ente.email) ?>;
+  const $ = (s) => document.querySelector(s);
+  const esc = (v) => String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const opzione = (tipo, nome, valore) =>
+    `<label class="opt"><input type="${tipo}" name="${nome}" value="${esc(valore)}"> ${esc(valore)}</label>`;
+
+  $('#comune').innerHTML = '<option value="">Scegli…</option>' + OPZ.zone.map((z) =>
+    `<optgroup label="${esc(z.zona)}">${z.comuni.map((c) => `<option>${esc(c)}</option>`).join('')}</optgroup>`).join('');
+  $('#prestazioni').innerHTML = OPZ.prestazioni.map((p) => opzione('checkbox', 'prestazioni', p)).join('');
+  $('#giorni').innerHTML = OPZ.giorni.map((g) => opzione('checkbox', 'giorni', g)).join('');
+  $('#fasce').innerHTML = OPZ.fasce.map((f) => opzione('checkbox', 'fasce', f)).join('');
+
+  $('#modulo').addEventListener('change', () => {
+    $('#errori').hidden = true;
+    $('#box-altro').hidden = !document.querySelector('input[name=prestazioni][value="Altro"]:checked');
+  });
+
+  $('#modulo').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const f = $('#modulo');
+    const valori = (nome) => Array.from(f.querySelectorAll(`input[name=${nome}]:checked`)).map((i) => i.value);
+    const dati = {};
+    ['referente', 'telefono', 'email', 'comune', 'altraPrestazione', 'note', 'sitoWeb'].forEach((k) => { dati[k] = f.elements[k].value; });
+    ['prestazioni', 'giorni', 'fasce'].forEach((k) => { dati[k] = valori(k); });
+    dati.luogo = valori('luogo')[0] || '';
+    dati.consenso = f.elements.consenso.checked;
+    $('#invia').disabled = true;
+    google.script.run.withSuccessHandler((r) => {
+      $('#invia').disabled = false;
+      if (!r.ok) {
+        $('#errori').hidden = false;
+        $('#errori').innerHTML = '<ul>' + r.errori.map((x) => `<li>${esc(x)}</li>`).join('') + '</ul>';
+        $('#errori').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+      f.hidden = true;
+      $('#fatto').hidden = false;
+      if (r.id) $('#codice-richiesta').textContent = `Numero della richiesta: ${r.id}.`;
+      window.scrollTo(0, 0);
+    }).withFailureHandler(() => {
+      $('#invia').disabled = false;
+      $('#errori').hidden = false;
+      $('#errori').textContent = 'Errore di collegamento. Riprova o scrivici a ' + EMAIL + '.';
+    }).inviaRichiesta(dati);
+  });
+</script>
+</body>
+</html>

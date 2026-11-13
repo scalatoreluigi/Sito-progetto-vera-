@@ -96,19 +96,20 @@ test('le famiglie non vedono nulla finché il profilo non è verificato e attivo
 
 test('dalla web app non si possono lanciare le funzioni di amministrazione né leggere i dati', () => {
   const { g } = preparato();
-  for (const f of ['installa', 'nuovoCodiceFamiglia', 'mostraIndirizzi', 'controlliGiornalieri', 'onOpen']) {
+  for (const f of ['installa', 'nuovoCodiceFamiglia', 'mostraIndirizzi', 'controlliGiornalieri', 'onOpen', 'numeriServizio']) {
     assert.throws(() => g.chiama(f), /getUi/, f);
   }
   assert.throws(() => g.chiama('controlliGiornalieri', { triggerUid: '123' }), /getUi/, 'uid inventato');
   assert.throws(() => g.chiama('alModificare', { range: {} }));
   // Le funzioni interne finiscono con "_": Apps Script non le espone a google.script.run.
   const pubbliche = Object.keys(g.ctx).filter((k) => typeof g.ctx[k] === 'function' && !k.endsWith('_'));
-  const logica = ['aData', 'aggiungiGiorni', 'aggiungiAnni', 'formatoData', 'aLista', 'vero', 'pulisci', 'sanifica',
+  const logica = ['giorniTra', 'zonaDi', 'normalizzaRichiesta', 'infermieriPerRichiesta', 'riepilogoRichieste', 'richiesteFerme', 'aData', 'aggiungiGiorni', 'aggiungiAnni', 'formatoData', 'aLista', 'vero', 'pulisci', 'sanifica',
     'normalizzaAdesione', 'infermiereVisibile', 'copreLuogo', 'filtraInfermieri', 'schedaPubblica', 'bloccantiAttivazione',
     'azioneGiornaliera', 'applicaRinnovo', 'codiceDaUuid', 'normalizzaCodice'];
-  assert.deepStrictEqual(pubbliche.filter((k) => logica.indexOf(k) === -1 && !/^[A-Z]/.test(k)).sort(), [
+  assert.deepStrictEqual(pubbliche.filter((k) => logica.indexOf(k) === -1 && !/^[A-Z]/.test(k)).sort().join(), [
     'accediFamiglia', 'alModificare', 'cercaInfermieri', 'controlliGiornalieri', 'datiRinnovo', 'doGet', 'include',
-    'installa', 'inviaAdesione', 'inviaRinnovo', 'mostraIndirizzi', 'nuovoCodiceFamiglia', 'onOpen']);
+    'installa', 'inviaAdesione', 'inviaRichiesta', 'inviaRinnovo', 'mostraIndirizzi', 'numeriServizio',
+    'nuovoCodiceFamiglia', 'onOpen'].join());
 });
 
 test("un anno dopo: richiesta di rinnovo, promemoria, sospensione, riattivazione", () => {
@@ -168,9 +169,101 @@ test("ritiro dell'infermiere dal link di rinnovo", () => {
 
 test('le pagine si generano e il token nella pagina di rinnovo è ripulito', () => {
   const { g } = preparato();
-  for (const p of ['adesione', 'rinnovo', 'informativa', undefined]) {
+  for (const p of ['adesione', 'rinnovo', 'informativa', 'area', undefined]) {
     const html = g.chiama('doGet', { parameter: { p, t: 'abc"</script><b>' } }).getContent();
     assert.ok(html.includes('Progetto Vera'), p);
     assert.ok(!html.includes('</script><b>'), p);
   }
+});
+
+function richiesta(extra) {
+  return Object.assign({
+    referente: 'Maria Verdi', telefono: '333 9876543', email: '', comune: 'Garda',
+    prestazioni: ['Cateterismo intermittente pulito'], luogo: 'Scuola', giorni: [], fasce: ['Pranzo (12-14)'],
+    note: 'Serve alle 12:30', consenso: true,
+  }, extra);
+}
+
+test("richiesta di una famiglia: email con gli infermieri adatti, nel foglio solo una riga anonima", () => {
+  const ctx = preparato();
+  const { g } = ctx;
+  attiva(ctx);
+  g.email.length = 0;
+  const r = g.chiama('inviaRichiesta', richiesta());
+  assert.strictEqual(r.ok, true);
+  assert.match(r.id, /^R-[0-9A-F]{6}$/);
+
+  assert.strictEqual(g.email.length, 1, "una sola email, all'associazione");
+  const m = g.email[0];
+  assert.strictEqual(m.to, 'progettoveraeisuoiamici@gmail.com');
+  assert.ok(!m.subject.includes('Cateterismo'), "nell'oggetto niente prestazione sanitaria");
+  for (const atteso of ['Maria Verdi', '333 9876543', 'Serve alle 12:30', 'Anna Rossi – 045 1234567', 'OPI n. 01234', 'cancella questa email']) {
+    assert.ok(m.body.includes(atteso), atteso);
+  }
+
+  const riga = g.fogli.Richieste.dati[1];
+  const testo = JSON.stringify(riga);
+  assert.ok(!testo.includes('Maria') && !testo.includes('9876543') && !testo.includes('12:30'), 'niente dati della famiglia');
+  assert.strictEqual(riga[2], 'Garda', 'zona, non comune');
+  assert.strictEqual(riga[5], 1, 'infermieri trovati');
+  assert.strictEqual(riga[6], 'Da gestire');
+
+  // Comune senza infermieri: l'email lo dice, e la riga conta zero.
+  g.email.length = 0;
+  g.chiama('inviaRichiesta', richiesta({ comune: 'Verona' }));
+  assert.ok(g.email[0].body.includes('Nessun infermiere attivo'));
+  assert.strictEqual(g.fogli.Richieste.dati[2][5], 0);
+
+  // Errori, honeypot e consenso.
+  assert.strictEqual(g.chiama('inviaRichiesta', richiesta({ consenso: false })).ok, false);
+  const righe = g.fogli.Richieste.getLastRow();
+  assert.strictEqual(g.chiama('inviaRichiesta', richiesta({ sitoWeb: 'x' })).ok, true);
+  assert.strictEqual(g.fogli.Richieste.getLastRow(), righe);
+});
+
+test("chiusura di una richiesta, richieste ferme e numeri del servizio", () => {
+  const ctx = preparato();
+  const { g } = ctx;
+  attiva(ctx);
+  g.chiama('inviaRichiesta', richiesta());
+  g.chiama('inviaRichiesta', richiesta({ comune: 'Verona' }));
+  const col = (n) => ['ID', 'Arrivata il', 'Zona', 'Prestazione', 'Luogo', 'Infermieri trovati', 'Esito', 'Chiusa il', 'Giorni'].indexOf(n) + 1;
+
+  g.vaiAl('2026-11-15');
+  g.stato.contesto = 'foglio';
+  g.modificaCella('Richieste', 2, col('Esito'), 'Abbinata');
+  assert.strictEqual(g.fogli.Richieste.leggi(2, col('Giorni')), 2);
+  g.modificaCella('Richieste', 2, col('Esito'), 'Da gestire');
+  assert.strictEqual(g.fogli.Richieste.leggi(2, col('Giorni')), '', 'riaperta: si toglie la chiusura');
+  g.modificaCella('Richieste', 2, col('Esito'), 'Abbinata');
+
+  // La seconda è ferma da 3 giorni: compare nel riepilogo del mattino.
+  g.vaiAl('2026-11-16');
+  g.email.length = 0;
+  g.chiama('controlliGiornalieri', { triggerUid: g.trigger[0].id });
+  assert.ok(g.email.some((m) => /ancora da gestire da 3 giorni/.test(m.body)));
+
+  g.avvisi.length = 0;
+  g.chiama('numeriServizio');
+  const testo = g.avvisi.join('\n');
+  for (const atteso of ['Richieste arrivate: 2', 'Abbinate: 1 (in media in 2 giorni)', 'Ancora da gestire: 1', 'Infermieri attivi oggi: 1']) {
+    assert.ok(testo.includes(atteso), atteso + ' in ' + testo);
+  }
+});
+
+test('foglio "Cerca" per le richieste a voce, aggiornato anche dai controlli del mattino', () => {
+  const ctx = preparato();
+  const { g } = ctx;
+  attiva(ctx);
+  g.stato.contesto = 'foglio';
+  g.modificaCella('Cerca', 3, 1, 'Garda');
+  g.modificaCella('Cerca', 3, 3, 'Scuola');
+  assert.strictEqual(g.fogli.Cerca.leggi(7, 1), 'Anna');
+  assert.strictEqual(g.fogli.Cerca.leggi(7, 3), '045 1234567');
+  g.modificaCella('Cerca', 3, 1, 'Verona');
+  assert.strictEqual(g.fogli.Cerca.leggi(7, 1), '', 'risultati vecchi cancellati');
+  g.modificaCella('Cerca', 3, 1, 'Garda');
+  g.vaiAl('2027-07-01'); // polizza scaduta
+  g.chiama('controlliGiornalieri', { triggerUid: g.trigger[0].id });
+  assert.strictEqual(g.fogli.Cerca.leggi(7, 1), '', 'un profilo sospeso sparisce anche dal foglio Cerca');
 });

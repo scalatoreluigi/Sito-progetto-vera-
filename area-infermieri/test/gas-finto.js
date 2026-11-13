@@ -29,6 +29,12 @@ class Intervallo {
   }
   // Come in Fogli: la convalida e i formati non contano come contenuto; insertCheckboxes invece scrive FALSE.
   setDataValidation() { return this; }
+  clearContent() {
+    for (let i = 0; i < this.righe; i++) for (let j = 0; j < this.colonne; j++) {
+      if (this.foglio.leggi(this.riga + i, this.col + j) !== '') this.foglio.scrivi(this.riga + i, this.col + j, '');
+    }
+    return this;
+  }
   setNumberFormat() { return this; }
   setFontWeight() { return this; }
   insertCheckboxes() {
@@ -56,7 +62,10 @@ class Foglio {
     return 0;
   }
   getMaxRows() { return 1000; }
-  getRange(r, c, n, m) { return new Intervallo(this, r, c, n, m); }
+  getRange(r, c, n, m) {
+    if (typeof r === 'string') return new Intervallo(this, 1, 1); // notazione A1: usata solo per le convalide
+    return new Intervallo(this, r, c, n, m);
+  }
   getDataRange() {
     const righe = this.getLastRow();
     const colonne = Math.max(1, ...this.dati.slice(0, righe).map((r) => r.length));
@@ -90,7 +99,7 @@ function creaAmbiente({ oggi = '2026-11-13', contesto = 'web' } = {}) {
     toast: (m) => avvisi.push(m),
   };
   const ui = {
-    alert: (m) => avvisi.push(m),
+    alert: (...m) => avvisi.push(m.filter((x) => typeof x === 'string').join('\n')),
     prompt: () => ({ getSelectedButton: () => 'OK', getResponseText: () => stato.rispostaPrompt || 'Referente prova' }),
     ButtonSet: { OK_CANCEL: 1 },
     Button: { OK: 'OK' },

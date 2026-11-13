@@ -1,12 +1,13 @@
 // Collegamento tra le regole (Logica.gs), il foglio Google, le email e le pagine web.
-// Le pagine: ?p=adesione (infermieri), ?p=rinnovo&t=... (conferma annuale), ?p=informativa, nessun parametro (famiglie).
+// Le pagine: nessun parametro (famiglie: "Chiedi un infermiere"), ?p=adesione (infermieri),
+// ?p=rinnovo&t=... (conferma annuale), ?p=informativa, ?p=area (area famiglie con codice, facoltativa).
 
 // ---------- Pagine web ----------
 
 function doGet(e) {
   const p = (e && e.parameter) || {};
-  const pagine = { adesione: 'Adesione', rinnovo: 'Rinnovo', informativa: 'Informativa' };
-  const t = HtmlService.createTemplateFromFile(pagine[p.p] || 'Famiglie');
+  const pagine = { adesione: 'Adesione', rinnovo: 'Rinnovo', informativa: 'Informativa', area: 'Famiglie' };
+  const t = HtmlService.createTemplateFromFile(pagine[p.p] || 'Richiesta');
   t.url = ScriptApp.getService().getUrl();
   t.token = String(p.t || '').replace(/[^a-f0-9-]/gi, '').slice(0, 40);
   t.ente = ENTE;
@@ -102,7 +103,68 @@ function inviaRinnovo(token, dati) {
   return { ok: true, stato: esito.modifiche.stato || r.rec.stato };
 }
 
-// ---------- Famiglie: accesso con codice e ricerca ----------
+// ---------- Famiglie: "Chiedi un infermiere" ----------
+
+// La richiesta arriva per email all'associazione, già con gli infermieri adatti.
+// Nel foglio resta solo una riga anonima (zona, prestazione, esito) per contare se il servizio funziona.
+function inviaRichiesta(dati) {
+  if (dati && dati.sitoWeb) return { ok: true };
+  if (!entroLimite_('richieste', REGOLE.richiesteOra, 3600)) {
+    return { ok: false, errori: [`Troppe richieste in poco tempo. Scrivici a ${ENTE.email}.`] };
+  }
+  const oggi = oggiRoma_();
+  const { errori, richiesta } = normalizzaRichiesta(dati, leggiComuni_(), oggi);
+  if (errori.length) return { ok: false, errori };
+
+  const adatti = infermieriPerRichiesta(tabellaInfermieri_().righe.map((r) => r.rec), richiesta, oggi);
+  const id = 'R-' + Utilities.getUuid().slice(0, 6).toUpperCase();
+  SpreadsheetApp.getActive().getSheetByName(FOGLI.richieste).appendRow([
+    id, new Date(), richiesta.zona, richiesta.prestazioni.join(', '), richiesta.luogo, adatti.length, ESITI.daGestire, '', '',
+  ].map(valoreCella_));
+
+  inviaEmail_(ENTE.email, `Richiesta infermiere ${id} – ${richiesta.comune}`, testoRichiesta_(id, richiesta, adatti));
+  return { ok: true, id };
+}
+
+function testoRichiesta_(id, r, adatti) {
+  const servizi = r.prestazioni.filter((p) => p !== 'Altro').concat(r.altraPrestazione ? [r.altraPrestazione] : []);
+  const righe = [
+    `Nuova richiesta ${id} del ${formatoData(r.arrivata)}`,
+    '',
+    'FAMIGLIA',
+    `Referente: ${r.referente}`,
+    `Telefono: ${r.telefono}`,
+    `Email: ${r.email || '—'}`,
+    `Comune: ${r.comune} (${r.zona})`,
+    `Serve: ${servizi.join(', ')}`,
+    `Dove: ${r.luogo === 'Entrambi' ? 'scuola e casa' : r.luogo}`,
+    `Quando: ${r.giorni.concat(r.fasce).join(', ') || 'non indicato'}`,
+    `Note: ${r.note || '—'}`,
+    '',
+    `INFERMIERI ADATTI, VERIFICATI E ATTIVI: ${adatti.length}`,
+  ];
+  if (!adatti.length) {
+    righe.push('Nessun infermiere attivo copre questa richiesta. Chiama comunque la famiglia per dirglielo,',
+      `poi segna l'esito "${ESITI.nessuno}": così sappiamo dove mancano infermieri.`);
+  }
+  adatti.slice(0, 5).forEach((x, k) => {
+    const s = schedaPubblica(x);
+    righe.push('', `${k + 1}. ${s.nome} ${s.cognome} – ${s.telefono} – ${s.email}`,
+      `   Offre: ${s.prestazioni.join(', ')} | Dove: ${s.luogo}`,
+      `   Disponibile: ${s.giorni.join(', ')} · ${s.fasce.join(', ')}`,
+      `   OPI n. ${s.numeroOpi} (${s.provinciaOpi})${s.tariffa ? ' | Tariffa: ' + s.tariffa : ''}`);
+  });
+  if (adatti.length > 5) righe.push('', `…e altri ${adatti.length - 5}: li trovi nel foglio "${FOGLI.cerca}".`);
+  righe.push('', 'COSA FARE',
+    '1. Controlla che sia una famiglia associata.',
+    '2. Chiama la famiglia e passale 1-3 contatti (se vuoi, senti prima l\'infermiere).',
+    `3. Nel foglio "${FOGLI.richieste}" cambia l'Esito della riga ${id}.`,
+    "4. Poi cancella questa email: contiene informazioni sulla salute di un bambino.",
+    '', CLAUSOLA_RUOLO);
+  return righe.join('\n');
+}
+
+// ---------- Famiglie: area con codice (facoltativa, spenta finché non si distribuiscono codici) ----------
 
 function accediFamiglia(codice) {
   const fam = verificaFamiglia_(codice);
@@ -152,10 +214,11 @@ function verificaFamiglia_(codice) {
 
 function onOpen() {
   SpreadsheetApp.getUi().createMenu('Progetto Vera')
-    .addItem('Nuovo codice famiglia', 'nuovoCodiceFamiglia')
+    .addItem('Numeri del servizio (ultimi 30 giorni)', 'numeriServizio')
     .addItem('Esegui ora i controlli giornalieri', 'controlliGiornalieri')
     .addItem('Mostra gli indirizzi delle pagine', 'mostraIndirizzi')
     .addSeparator()
+    .addItem('Area famiglie con codice (facoltativa): nuovo codice', 'nuovoCodiceFamiglia')
     .addItem('Installazione (solo la prima volta)', 'installa')
     .addToUi();
 }
@@ -196,6 +259,23 @@ function installa() {
   }
   foglio_(ss, FOGLI.registro, COLONNE_REGISTRO);
 
+  const ric = foglio_(ss, FOGLI.richieste, COLONNE_RICHIESTE);
+  ric.getRange(2, COLONNE_RICHIESTE.indexOf('Esito') + 1, ric.getMaxRows() - 1).setDataValidation(
+    SpreadsheetApp.newDataValidation().requireValueInList(Object.values(ESITI), true).setAllowInvalid(false).build());
+  for (const c of ['Arrivata il', 'Chiusa il']) ric.getRange(2, COLONNE_RICHIESTE.indexOf(c) + 1, ric.getMaxRows() - 1).setNumberFormat('dd/mm/yyyy');
+
+  // Foglio "Cerca": per le richieste che arrivano a voce. Si scelgono i filtri nella riga 3, i risultati si aggiornano da soli.
+  const cer = ss.getSheetByName(FOGLI.cerca) || ss.insertSheet(FOGLI.cerca);
+  cer.getRange(1, 1).setValue('Cerca un infermiere: scegli comune, prestazione e luogo nella riga 3. I risultati si aggiornano da soli.');
+  cer.getRange(2, 1, 1, 3).setValues([['Comune', 'Prestazione', 'Luogo']]).setFontWeight('bold');
+  cer.getRange(3, 1).setDataValidation(SpreadsheetApp.newDataValidation()
+    .requireValueInRange(com.getRange('B2:B'), true).setAllowInvalid(false).build());
+  cer.getRange(3, 2).setDataValidation(SpreadsheetApp.newDataValidation()
+    .requireValueInList(PRESTAZIONI.filter((p) => p !== 'Altro'), true).setAllowInvalid(false).build());
+  cer.getRange(3, 3).setDataValidation(SpreadsheetApp.newDataValidation()
+    .requireValueInList(['Scuola', 'Domicilio'], true).setAllowInvalid(false).build());
+  cer.setFrozenRows(3);
+
   // Automatismi: controllo ogni mattina e reazione ai cambi di stato.
   ScriptApp.getProjectTriggers().forEach((t) => ScriptApp.deleteTrigger(t));
   ScriptApp.newTrigger('controlliGiornalieri').timeBased().everyDays(1).atHour(7).inTimezone('Europe/Rome').create();
@@ -214,10 +294,49 @@ function foglio_(ss, nome, intestazioni) {
   return f;
 }
 
-// Reagisce quando l'associazione cambia lo stato di un infermiere.
+// Reagisce alle modifiche fatte a mano nel foglio.
 function alModificare(e) {
   const r = e.range;
-  if (r.getSheet().getName() !== FOGLI.infermieri || r.getRow() < 2 || r.getNumRows() > 1) return;
+  if (r.getRow() < 2 || r.getNumRows() > 1) return;
+  const nome = r.getSheet().getName();
+  if (nome === FOGLI.infermieri) cambioStato_(e);
+  else if (nome === FOGLI.richieste) cambioEsito_(e);
+  else if (nome === FOGLI.cerca && r.getRow() === 3) aggiornaCerca_();
+}
+
+// Quando una richiesta viene chiusa, si segnano data e giorni impiegati.
+function cambioEsito_(e) {
+  const r = e.range;
+  if (r.getColumn() !== COLONNE_RICHIESTE.indexOf('Esito') + 1) return;
+  const f = r.getSheet();
+  const col = (nome) => COLONNE_RICHIESTE.indexOf(nome) + 1;
+  const chiusa = [ESITI.abbinata, ESITI.nessuno, ESITI.annullata].indexOf(String(e.value || '')) !== -1;
+  const oggi = oggiRoma_();
+  f.getRange(r.getRow(), col('Chiusa il')).setValue(chiusa ? oggi : '');
+  f.getRange(r.getRow(), col('Giorni')).setValue(chiusa ? giorniTra(f.getRange(r.getRow(), col('Arrivata il')).getValue(), oggi) : '');
+}
+
+function aggiornaCerca_() {
+  const f = SpreadsheetApp.getActive().getSheetByName(FOGLI.cerca);
+  const [comune, prestazione, luogo] = f.getRange(3, 1, 1, 3).getValues()[0].map(String);
+  const intestazioni = ['Nome', 'Cognome', 'Telefono', 'Email', 'Prestazioni', 'Luogo', 'Comuni', 'Giorni', 'Fasce', 'OPI'];
+  const ultima = Math.max(f.getLastRow(), 5);
+  f.getRange(5, 1, ultima - 4, intestazioni.length).clearContent();
+  const trovati = filtraInfermieri(tabellaInfermieri_().righe.map((x) => x.rec), { comune, prestazione, luogo }, oggiRoma_())
+    .map(schedaPubblica);
+  f.getRange(5, 1).setValue(`${trovati.length} infermieri attivi e verificati · aggiornato il ${formatoData(new Date())}`);
+  f.getRange(6, 1, 1, intestazioni.length).setValues([intestazioni]).setFontWeight('bold');
+  if (trovati.length) {
+    f.getRange(7, 1, trovati.length, intestazioni.length).setValues(trovati.map((s) => [
+      s.nome, s.cognome, s.telefono, s.email, s.prestazioni.join(', '), s.luogo, s.comuni.join(', '),
+      s.giorni.join(', '), s.fasce.join(', '), `${s.numeroOpi} (${s.provinciaOpi})`,
+    ].map(valoreCella_)));
+  }
+}
+
+// Quando l'associazione cambia lo stato di un infermiere.
+function cambioStato_(e) {
+  const r = e.range;
   const tab = tabellaInfermieri_();
   if (tab.intestazioni[r.getColumn() - 1] !== COLONNE.stato) return;
   const riga = tab.righe.find((x) => x.riga === r.getRow());
@@ -288,9 +407,29 @@ function controlliGiornalieri(e) {
     registra_(azione.tipo, rec.id, azione.motivo || '');
   });
 
+  richiesteFerme(leggiRichieste_(), oggi).forEach((r) => {
+    riepilogo.push(`Richiesta ${r.id} ancora da gestire da ${giorniTra(r.arrivata, oggi)} giorni (zona ${r.zona})`);
+  });
+  aggiornaCerca_(); // nel foglio "Cerca" non devono restare profili scaduti
+
   if (riepilogo.length) {
     inviaEmail_(ENTE.email, 'Infermieri per le famiglie: controlli di oggi', riepilogo.join('\n') + '\n\n' + SpreadsheetApp.getActive().getUrl());
   }
+}
+
+function numeriServizio() {
+  soloDalFoglio_();
+  const n = riepilogoRichieste(leggiRichieste_(), oggiRoma_(), 30);
+  const iscritti = tabellaInfermieri_().righe.map((x) => x.rec);
+  const attivi = iscritti.filter((rec) => infermiereVisibile(rec, oggiRoma_())).length;
+  const inAttesa = iscritti.filter((rec) => rec.stato === STATI.attesa).length;
+  SpreadsheetApp.getUi().alert('Numeri del servizio – ultimi 30 giorni',
+    `Richieste arrivate: ${n.arrivate}\n` +
+    `Abbinate: ${n.abbinate}${n.giorniMedi !== null ? ` (in media in ${n.giorniMedi} giorni)` : ''}\n` +
+    `Senza infermiere disponibile: ${n.nessuno}\n` +
+    `Ancora da gestire: ${n.aperte}\n\n` +
+    `Infermieri attivi oggi: ${attivi}\nAdesioni da verificare: ${inAttesa}`,
+    SpreadsheetApp.getUi().ButtonSet.OK);
 }
 
 function nuovoCodiceFamiglia() {
@@ -316,8 +455,9 @@ function mostraIndirizzi() {
     SpreadsheetApp.getUi().alert('Le pagine non sono ancora pubblicate: Esegui il deployment → Nuovo deployment → App web.');
     return;
   }
-  SpreadsheetApp.getUi().alert(`Area famiglie:\n${url}\n\nAdesione infermieri:\n${url}?p=adesione\n\n` +
-    'Copia l\'indirizzo dell\'area famiglie nel pannello del sito (Impostazioni → Area infermieri).');
+  SpreadsheetApp.getUi().alert(`Indirizzo da incollare nel pannello del sito (Impostazioni → Area infermieri):\n${url}\n\n` +
+    `Chiedi un infermiere (famiglie): ${url}\nAdesione infermieri: ${url}?p=adesione\n` +
+    `Area famiglie con codice (facoltativa): ${url}?p=area`);
 }
 
 // ---------- Utilità ----------
@@ -388,6 +528,14 @@ function scriviCampi_(tab, riga, modifiche) {
     const c = tab.intestazioni.indexOf(COLONNE[chiave]);
     if (c !== -1) tab.foglio.getRange(riga, c + 1).setValue(valoreCella_(modifiche[chiave]));
   });
+}
+
+function leggiRichieste_() {
+  const f = SpreadsheetApp.getActive().getSheetByName(FOGLI.richieste);
+  const c = (nome) => COLONNE_RICHIESTE.indexOf(nome);
+  return f.getDataRange().getValues().slice(1).filter((v) => v[c('ID')]).map((v) => ({
+    id: v[c('ID')], arrivata: v[c('Arrivata il')], zona: v[c('Zona')], esito: v[c('Esito')], chiusa: v[c('Chiusa il')],
+  }));
 }
 
 function trovaPerToken_(token) {

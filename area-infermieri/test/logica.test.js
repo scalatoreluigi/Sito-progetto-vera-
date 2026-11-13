@@ -167,3 +167,52 @@ test('codici famiglia: formato, casualità, normalizzazione', () => {
   assert.strictEqual(fn('normalizzaCodice')(' abcd efgh-jkmn '), 'ABCD-EFGH-JKMN');
   assert.strictEqual(fn('normalizzaCodice')('abc'), '');
 });
+
+const ZONE = [{ zona: 'Garda', comuni: ['Bardolino', 'Garda'] }, { zona: 'Verona', comuni: ['Verona'] }];
+function richiestaValida(extra) {
+  return Object.assign({
+    referente: 'Maria', telefono: '333 1234567', comune: 'Bardolino', prestazioni: ['Cateterismo intermittente pulito'],
+    luogo: 'Scuola', giorni: ['Lunedì'], fasce: ['Pranzo (12-14)'], consenso: true,
+  }, extra);
+}
+
+test('richiesta della famiglia: valida, zona ricavata dal comune, consenso obbligatorio', () => {
+  const norma = fn('normalizzaRichiesta');
+  const { errori, richiesta } = norma(richiestaValida(), ZONE, OGGI);
+  assert.deepStrictEqual(Array.from(errori), []);
+  assert.strictEqual(richiesta.zona, 'Garda');
+  assert.ok(norma(richiestaValida({ consenso: false }), ZONE, OGGI).errori.some((e) => e.includes('consenso')));
+  assert.ok(norma(richiestaValida({ comune: 'Atlantide' }), ZONE, OGGI).errori.some((e) => e.includes('comune')));
+  assert.ok(norma(richiestaValida({ telefono: 'abc' }), ZONE, OGGI).errori.some((e) => e.includes('telefono')));
+  assert.deepStrictEqual(Array.from(norma(richiestaValida({ email: '' }), ZONE, OGGI).errori), [], "l'email è facoltativa");
+});
+
+test('infermieri per una richiesta: filtrati e ordinati dal più adatto', () => {
+  const r = fn('normalizzaRichiesta')(richiestaValida({ prestazioni: ['Cateterismo intermittente pulito', 'Medicazioni'], comune: 'Garda' }), ZONE, OGGI).richiesta;
+  const elenco = [
+    attivo({ cognome: 'Uno', prestazioni: 'Medicazioni', fasce: 'Sera (19-22)' }),
+    attivo({ cognome: 'Due', prestazioni: 'Cateterismo intermittente pulito, Medicazioni' }),
+    attivo({ cognome: 'Tre', prestazioni: 'Gestione PEG' }),
+    attivo({ cognome: 'Quattro', luogo: 'Domicilio' }),
+    attivo({ cognome: 'Cinque', stato: STATI.sospeso }),
+  ];
+  const nomi = (rich) => fn('infermieriPerRichiesta')(elenco, rich, OGGI).map((x) => x.cognome).join();
+  assert.strictEqual(nomi(r), 'Due,Uno');
+  assert.strictEqual(nomi(Object.assign({}, r, { luogo: 'Entrambi' })), 'Due,Quattro,Uno');
+  assert.strictEqual(nomi(Object.assign({}, r, { prestazioni: ['Altro'] })), 'Due,Tre,Uno', '"Altro": tutti quelli del comune e del luogo');
+});
+
+test('numeri del servizio e richieste ferme', () => {
+  const E = L('ESITI');
+  const righe = [
+    { arrivata: d('2026-11-01'), esito: E.abbinata, chiusa: d('2026-11-03') },
+    { arrivata: d('2026-11-05'), esito: E.abbinata, chiusa: d('2026-11-10') },
+    { arrivata: d('2026-11-08'), esito: E.nessuno, chiusa: d('2026-11-08') },
+    { arrivata: d('2026-11-10'), esito: E.daGestire },
+    { arrivata: d('2026-11-12'), esito: E.daGestire },
+    { arrivata: d('2026-09-01'), esito: E.abbinata, chiusa: d('2026-09-30') },
+  ];
+  const n = fn('riepilogoRichieste')(righe, OGGI, 30);
+  assert.deepStrictEqual([n.arrivate, n.abbinate, n.nessuno, n.aperte, n.giorniMedi], [5, 2, 1, 2, 3.5]);
+  assert.strictEqual(fn('richiesteFerme')(righe, OGGI).length, 1, 'solo quella di 3 giorni fa');
+});

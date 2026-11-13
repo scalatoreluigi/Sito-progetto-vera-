@@ -16,6 +16,8 @@ const REGOLE = {
   giorniTolleranzaRinnovo: 30, // dopo la scadenza, quanti giorni per confermare prima della sospensione
   giorniPromemoriaRinnovo: 20, // dopo quanti giorni dalla richiesta di rinnovo si manda un promemoria
   giorniAvvisoRc: 30,          // quanti giorni prima della scadenza della polizza RC si manda l'avviso
+  giorniRichiestaFerma: 3,     // dopo quanti giorni una richiesta non chiusa viene segnalata nel riepilogo
+  richiesteOra: 30,            // massimo di richieste dal modulo in un'ora (contro lo spam)
 };
 
 const FOGLI = {
@@ -23,6 +25,8 @@ const FOGLI = {
   famiglie: 'Famiglie',
   comuni: 'Comuni',
   registro: 'Registro',
+  richieste: 'Richieste',
+  cerca: 'Cerca',
 };
 
 const STATI = {
@@ -81,6 +85,18 @@ const COLONNE = {
   motivoSospensione: 'Motivo sospensione',
   token: 'Token',
 };
+
+// Esito di una richiesta, da aggiornare a mano nel foglio "Richieste".
+const ESITI = {
+  daGestire: 'Da gestire',
+  abbinata: 'Abbinata',
+  nessuno: 'Nessun infermiere disponibile',
+  annullata: 'Annullata',
+};
+
+// Il foglio "Richieste" è anonimo: niente nomi, niente telefoni, niente comune (solo la zona).
+// Serve a sapere se il servizio funziona: quante richieste, quante abbinate, in quanti giorni.
+const COLONNE_RICHIESTE = ['ID', 'Arrivata il', 'Zona', 'Prestazione', 'Luogo', 'Infermieri trovati', 'Esito', 'Chiusa il', 'Giorni'];
 
 const COLONNE_FAMIGLIE = ['Codice', 'Referente', 'Attivo', 'Creato il', 'Ultimo accesso', 'Accessi', 'Note'];
 const COLONNE_REGISTRO = ['Data', 'Evento', 'ID', 'Dettagli'];

@@ -265,3 +265,84 @@ function normalizzaCodice(c) {
   const s = String(c || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
   return s.length === 12 ? s.slice(0, 4) + '-' + s.slice(4, 8) + '-' + s.slice(8) : '';
 }
+
+// ---------- Richieste delle famiglie (modulo "Chiedi un infermiere") ----------
+
+function giorniTra(da, a) {
+  return Math.round((aData(a) - aData(da)) / MS_GIORNO);
+}
+
+function zonaDi(comune, zone) {
+  const z = (zone || []).find((x) => x.comuni.indexOf(comune) !== -1);
+  return z ? z.zona : '';
+}
+
+// Controlla la richiesta di una famiglia. Restituisce { errori, richiesta }.
+function normalizzaRichiesta(input, zone, oggi) {
+  const i = input || {};
+  const errori = [];
+  const riga = (v, max) => pulisci(String(v === undefined || v === null ? '' : v).replace(/\s+/g, ' '), max);
+  const r = {
+    referente: riga(i.referente, 60),
+    telefono: riga(i.telefono, 30),
+    email: riga(i.email, 120).toLowerCase(),
+    comune: riga(i.comune, 60),
+    prestazioni: aLista(i.prestazioni).filter((p) => PRESTAZIONI.indexOf(p) !== -1),
+    altraPrestazione: riga(i.altraPrestazione, 200),
+    luogo: LUOGHI.indexOf(i.luogo) !== -1 ? i.luogo : '',
+    giorni: aLista(i.giorni).filter((g) => GIORNI.indexOf(g) !== -1),
+    fasce: aLista(i.fasce).filter((f) => FASCE.indexOf(f) !== -1),
+    note: pulisci(i.note, 300),
+    consenso: vero(i.consenso),
+  };
+  if (!r.referente) errori.push('Scrivi il tuo nome.');
+  if (!/^[+\d][\d\s./-]{5,}$/.test(r.telefono)) errori.push('Scrivi un numero di telefono valido: ti richiamiamo lì.');
+  if (r.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(r.email)) errori.push("L'email non è valida (puoi anche lasciarla vuota).");
+  r.zona = zonaDi(r.comune, zone);
+  if (!r.zona) errori.push('Scegli il comune.');
+  if (!r.prestazioni.length) errori.push('Scegli almeno una prestazione.');
+  if (r.prestazioni.indexOf('Altro') !== -1 && !r.altraPrestazione) errori.push('Descrivi la prestazione "Altro".');
+  if (!r.luogo) errori.push('Indica se serve a scuola, a casa o in entrambi.');
+  if (!r.consenso) errori.push("Serve il consenso: senza non possiamo usare questi dati per cercarti un infermiere.");
+  r.arrivata = oggi;
+  return { errori, richiesta: r };
+}
+
+// Infermieri adatti a una richiesta: verificati, nel comune, nel luogo, con almeno una prestazione richiesta.
+// I primi sono quelli che coprono più prestazioni e più fasce orarie tra quelle chieste.
+function infermieriPerRichiesta(elenco, richiesta, oggi) {
+  const richieste = richiesta.prestazioni.filter((p) => p !== 'Altro');
+  const conPunteggio = elenco
+    .filter((rec) => infermiereVisibile(rec, oggi) && aLista(rec.comuni).indexOf(richiesta.comune) !== -1)
+    .filter((rec) => richiesta.luogo === 'Entrambi' || copreLuogo(rec.luogo, richiesta.luogo))
+    .map((rec) => {
+      const offerte = aLista(rec.prestazioni);
+      const prestazioni = richieste.filter((p) => offerte.indexOf(p) !== -1).length;
+      const fasce = richiesta.fasce.filter((f) => aLista(rec.fasce).indexOf(f) !== -1).length;
+      return { rec, prestazioni, fasce };
+    })
+    .filter((x) => !richieste.length || x.prestazioni > 0);
+  conPunteggio.sort((a, b) => b.prestazioni - a.prestazioni || b.fasce - a.fasce || String(a.rec.cognome).localeCompare(String(b.rec.cognome)));
+  return conPunteggio.map((x) => x.rec);
+}
+
+// I numeri che dicono se il servizio funziona, sulle richieste arrivate negli ultimi `giorni`.
+function riepilogoRichieste(righe, oggi, giorni) {
+  const da = aggiungiGiorni(oggi, -giorni);
+  const periodo = righe.filter((r) => aData(r.arrivata) && aData(r.arrivata) > da);
+  const abbinate = periodo.filter((r) => r.esito === ESITI.abbinata);
+  const tempi = abbinate.map((r) => giorniTra(r.arrivata, r.chiusa)).filter((n) => !isNaN(n));
+  return {
+    arrivate: periodo.length,
+    abbinate: abbinate.length,
+    nessuno: periodo.filter((r) => r.esito === ESITI.nessuno).length,
+    aperte: periodo.filter((r) => !r.esito || r.esito === ESITI.daGestire).length,
+    giorniMedi: tempi.length ? Math.round((tempi.reduce((s, n) => s + n, 0) / tempi.length) * 10) / 10 : null,
+  };
+}
+
+// Richieste ancora da gestire dopo REGOLE.giorniRichiestaFerma giorni.
+function richiesteFerme(righe, oggi) {
+  return righe.filter((r) => (!r.esito || r.esito === ESITI.daGestire) && aData(r.arrivata) &&
+    giorniTra(r.arrivata, oggi) >= REGOLE.giorniRichiestaFerma);
+}

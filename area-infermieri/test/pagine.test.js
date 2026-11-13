@@ -34,7 +34,7 @@ async function apri(browser, g, query, larghezza = 1100) {
   return { page, errori };
 }
 
-test('modulo di adesione, attivazione e ricerca della famiglia nel browser', { skip: !chromium }, async () => {
+test('adesione, attivazione, richiesta e ricerca della famiglia nel browser', { skip: !chromium }, async () => {
   const g = creaAmbiente({ contesto: 'foglio' });
   g.chiama('installa');
   g.chiama('nuovoCodiceFamiglia');
@@ -80,7 +80,7 @@ test('modulo di adesione, attivazione e ricerca della famiglia nel browser', { s
     g.stato.contesto = 'web';
 
     // 3. La famiglia entra con il codice e cerca (anche su telefono).
-    const fam = await apri(browser, g, '', 390);
+    const fam = await apri(browser, g, '?p=area', 390);
     await fam.page.fill('#codice', 'AAAA-BBBB-CCCC');
     await fam.page.click('#entra');
     await fam.page.waitForSelector('#errore-codice:not([hidden])');
@@ -102,7 +102,27 @@ test('modulo di adesione, attivazione e ricerca della famiglia nel browser', { s
     await fam.page.waitForFunction(() => document.querySelector('#conteggio').textContent.startsWith('Nessun'));
     assert.deepStrictEqual(fam.errori, []);
 
-    // 4. Rinnovo e informativa.
+    // 4. Un'altra famiglia usa "Chiedi un infermiere" dal telefono.
+    const ric = await apri(browser, g, '', 390);
+    await ric.page.click('#invia');
+    await ric.page.waitForSelector('#errori:not([hidden])');
+    await ric.page.fill('#referente', 'Maria Verdi');
+    await ric.page.fill('#telefono', '333 9876543');
+    await ric.page.selectOption('#comune', 'Lazise');
+    await ric.page.check('input[name=prestazioni][value="Cateterismo intermittente pulito"]');
+    await ric.page.check('input[name=luogo][value="Scuola"]');
+    await ric.page.check('input[name=fasce][value="Pranzo (12-14)"]');
+    await ric.page.check('input[name=consenso]');
+    if (ANTEPRIMA) await ric.page.screenshot({ path: ANTEPRIMA + '/richiesta.png', fullPage: true });
+    g.email.length = 0;
+    await ric.page.click('#invia');
+    await ric.page.waitForSelector('#fatto:not([hidden])');
+    assert.match(await ric.page.textContent('#fatto'), /R-[0-9A-F]{6}/);
+    assert.ok(g.email[0].body.includes('Giulia Bianchi'), "l'email all'associazione propone l'infermiera giusta");
+    assert.ok(await ric.page.evaluate(() => document.documentElement.scrollWidth) <= 390);
+    assert.deepStrictEqual(ric.errori, []);
+
+    // 5. Rinnovo e informativa.
     const token = g.fogli.Infermieri.leggi(2, h.indexOf('Token') + 1);
     const rin = await apri(browser, g, '?p=rinnovo&t=' + token, 390);
     await rin.page.waitForSelector('#modulo:not([hidden])');

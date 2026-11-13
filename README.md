@@ -29,7 +29,7 @@ Finché è vuota, i pulsanti mostrano un avviso invece di pagare. Ogni ordine ti
 
 ## Area "Infermieri per le famiglie"
 È nella cartella `area-infermieri/`. Funziona con un Foglio Google privato e Google Apps Script, perché i dati non possono stare in questo repository pubblico.
-Installazione e uso sono spiegati in `area-infermieri/LEGGIMI.md`. Finché nel pannello non inserisci l'indirizzo dell'area, la sezione resta nascosta sul sito.
+Le famiglie chiedono un infermiere con un modulo, l'associazione riceve un'email con i contatti adatti e richiama. Installazione e uso: `area-infermieri/LEGGIMI.md`. Finché nel pannello non inserisci l'indirizzo dell'area, la sezione resta nascosta sul sito.
 
 ## Dati ufficiali (fonte: RUNTS, verificati il 26/10/2026)
 - Denominazione: Associazione Progetto Vera e i suoi amici E.T.S. – sezione "Altri enti del Terzo Settore", ente non commerciale
