@@ -6,12 +6,16 @@
   <title>Progetto Vera e i suoi amici</title>
   <meta name="description" content="Rete di famiglie di bambini con spina bifida e paralisi cerebrale: portiamo in Italia terapie DMI e CME. Trasparenza totale sui fondi.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Nunito+Sans:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Marcellus&family=Nunito+Sans:wght@400;600;700&display=swap">
+  <link rel="icon" type="image/png" href="images/logo-64.png">
+  <link rel="apple-touch-icon" href="images/logo-192.png">
+  <meta property="og:image" content="images/logo-512.png">
+  <meta name="theme-color" content="#111214">
   <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
   <header class="topbar">
-    <a href="#" class="brand"><span class="brand-dot"></span><span data-bind="nome">Progetto Vera</span></a>
+    <a href="#" class="brand"><img src="images/logo-64.png" alt="" width="44" height="44"><span data-bind="nome">Progetto Vera</span></a>
     <button class="menu-btn" aria-label="Apri menu" aria-expanded="false">☰</button>
     <nav class="nav">
       <a href="#chi-siamo">Chi siamo</a>
@@ -27,13 +31,16 @@
   <main>
     <section class="hero">
       <div class="wrap">
-        <p class="eyebrow">Spina bifida · Paralisi cerebrale · Riabilitazione</p>
-        <h1 data-bind="nome">Progetto Vera e i suoi amici</h1>
-        <p class="lead" data-bind="slogan"></p>
-        <div class="hero-cta">
-          <a href="#dona" class="btn">Sostieni le terapie</a>
-          <a href="#trasparenza" class="btn btn-ghost">Guarda dove vanno i fondi</a>
+        <div>
+          <p class="eyebrow">Spina bifida · Paralisi cerebrale · Riabilitazione</p>
+          <h1 data-bind="nome">Progetto Vera e i suoi amici</h1>
+          <p class="lead" data-bind="slogan"></p>
+          <div class="hero-cta">
+            <a href="#dona" class="btn">Sostieni le terapie</a>
+            <a href="#trasparenza" class="btn btn-ghost">Guarda dove vanno i fondi</a>
+          </div>
         </div>
+        <img class="hero-logo" src="images/logo-512.png" alt="Logo di Progetto Vera e i suoi amici: un elefantino nero su un cerchio giallo" width="340" height="340">
       </div>
     </section>
 
@@ -53,8 +60,9 @@
       <div class="wrap">
         <h2>Le terapie</h2>
         <div id="lista-terapie" class="grid"></div>
-        <h2 class="mt">I terapisti che ruotano intorno a noi</h2>
-        <div id="lista-terapisti" class="grid"></div>
+        <h2 class="mt">Terapisti invitati</h2>
+        <p class="muted">Vengono in Italia per settimane di terapia intensiva con i nostri bambini.</p>
+        <div id="lista-terapisti" class="terapisti"></div>
       </div>
     </section>
 
@@ -154,13 +162,16 @@
 
   <footer class="footer">
     <div class="wrap footer-grid">
-      <div>
+      <div class="footer-brand">
+        <img src="images/logo-192.png" alt="" width="72" height="72">
+        <div>
         <strong data-bind="nome_legale"></strong><br>
         <span data-bind="sede"></span><br>
         <a id="mail" href="#"></a> <span data-bind="telefono"></span><br>
         <span class="small">PEC: <a id="pec" href="#"></a></span><br>
         <span class="small" id="cf"></span><br>
         <span class="small" data-bind="runts"></span>
+        </div>
       </div>
       <div class="social">
         <a id="fb" href="#" target="_blank" rel="noopener" aria-label="Facebook">

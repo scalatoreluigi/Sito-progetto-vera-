@@ -85,19 +85,26 @@ function renderChiSiamo(c) {
 
 function renderTerapie(t) {
   $('#lista-terapie').innerHTML = (t.terapie || []).map((x) => `
-    <div class="card">
+    <div class="card terapia">
       ${x.immagine ? `<img src="${esc(x.immagine)}" alt="">` : ''}
       <h3>${esc(x.nome)}</h3>
       <p class="muted">${esc(x.descrizione)}</p>
     </div>`).join('');
+  // Come i post Instagram: foto grande su fondo giallo, nome in evidenza, descrizione sotto.
+  // Senza foto (o senza consenso) al posto della foto c'è l'elefantino del logo.
   $('#lista-terapisti').innerHTML = (t.terapisti || []).map((x) => `
-    <div class="card">
-      ${x.foto && x.consenso_foto ? `<img class="foto" src="${esc(x.foto)}" alt="${esc(x.nome)}">` : ''}
-      <span class="tag">${esc(x.ruolo)}${x.provenienza ? ' · ' + esc(x.provenienza) : ''}</span>
-      <h3>${esc(x.nome)}</h3>
-      <p class="muted">${esc(x.descrizione)}</p>
-      ${x.link ? `<a href="${esc(x.link)}" target="_blank" rel="noopener">Scopri di più</a>` : ''}
-    </div>`).join('');
+    <figure class="terapista">
+      <p class="etichetta">Terapisti invitati</p>
+      ${x.foto && x.consenso_foto
+        ? `<img class="foto" src="${esc(x.foto)}" alt="${esc(x.nome)}" loading="lazy">`
+        : '<div class="foto-vuota"><img src="images/logo-192.png" alt=""></div>'}
+      <figcaption>
+        <h3>${esc(x.nome)}</h3>
+        <span class="tag">${esc(x.ruolo)}${x.provenienza ? ' · ' + esc(x.provenienza) : ''}</span>
+        <p>${esc(x.descrizione)}</p>
+        ${x.link ? `<p><a href="${esc(x.link)}" target="_blank" rel="noopener">Scopri di più</a></p>` : ''}
+      </figcaption>
+    </figure>`).join('');
 }
 
 // Mostra solo le foto per cui c'è il consenso scritto.

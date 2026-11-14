@@ -54,7 +54,7 @@ Fai tutto con l'account Google **dell'associazione** (progettoveraeisuoiamici@gm
 3. In **Impostazioni progetto** (ingranaggio) spunta "Mostra il file manifest appsscript.json". Poi torna all'**Editor**.
 4. Crea questi file e copia in ognuno il contenuto del file omonimo di questa cartella:
    - **Script** (pulsante + → Script): `Config`, `Logica`, `Codice`. Il file `Codice.gs` già presente va svuotato e riempito.
-   - **HTML** (pulsante + → HTML): `Stile`, `Richiesta`, `Adesione`, `Rinnovo`, `Informativa`, `Famiglie`.
+   - **HTML** (pulsante + → HTML): `Stile`, `Logo`, `Richiesta`, `Adesione`, `Rinnovo`, `Informativa`, `Famiglie`.
    - `appsscript.json`: sostituisci tutto il contenuto.
 5. Salva, torna al foglio e ricarica. Compare il menu **Progetto Vera**: scegli **Installazione (solo la prima volta)**.
    Google mostra "App non verificata": è normale per uno script fatto da voi.
