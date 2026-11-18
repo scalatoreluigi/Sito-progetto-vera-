@@ -79,15 +79,27 @@ img { max-width: 100%; display: block; }
 .btn-small { padding: 6px 16px; font-size: .9rem; }
 .btn[disabled] { opacity: .5; cursor: not-allowed; }
 
-/* Apertura: fondo giallo con il logo */
-.hero { padding: 72px 0; background: var(--giallo); }
-.hero .wrap { display: grid; grid-template-columns: 1.4fr 1fr; gap: 40px; align-items: center; }
-.hero-logo { width: min(340px, 100%); justify-self: center; }
-@media (max-width: 760px) {
-  .hero .wrap { grid-template-columns: 1fr; }
-  .hero-logo { width: 190px; order: -1; }
+/* Apertura: fondo giallo, logo piccolo a sinistra del titolo */
+.hero { padding: 64px 0; background: var(--giallo); }
+.hero-wrap { display: flex; gap: 32px; align-items: flex-start; }
+.hero-testo { min-width: 0; }
+.hero-logo { flex: none; width: 120px; height: auto; aspect-ratio: 1; }
+@media (max-width: 600px) {
+  .hero-wrap { flex-direction: column; gap: 16px; }
+  .hero-logo { width: 84px; }
 }
-.eyebrow { font-size: .85rem; color: var(--ink); margin: 0 0 12px; }
+.costruzione { margin-top: 20px; max-width: 600px; }
+.costruzione p { margin: 0; }
+
+/* Revisione: sezioni non ancora pubblicate, visibili solo in anteprima */
+.banda-anteprima { background: var(--nero); color: var(--giallo); text-align: center; padding: 8px 16px; font-size: .9rem; }
+.banda-anteprima a { color: #fff; margin-left: 6px; }
+.bozza { outline: 3px dashed var(--nero); outline-offset: -12px; position: relative; }
+.bozza::before {
+  content: "Non ancora pubblicata"; position: absolute; top: 20px; right: 24px; z-index: 1;
+  background: var(--nero); color: var(--giallo); font: .75rem/1 var(--maiuscole); letter-spacing: .1em;
+  text-transform: uppercase; padding: 6px 10px; border-radius: 999px;
+}
 .lead { font-size: 1.25rem; max-width: 600px; color: var(--ink); }
 .hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
 
@@ -161,7 +173,7 @@ th { font-size: .8rem; color: var(--muted); background: var(--giallo-chiaro); }
 /* Piede */
 .footer { padding: 40px 0; background: var(--giallo); }
 .footer-grid { display: flex; justify-content: space-between; gap: 24px; flex-wrap: wrap; align-items: center; }
-.footer-brand { display: flex; gap: 16px; align-items: center; }
+.footer-brand { display: flex; gap: 16px; align-items: flex-start; }
 .footer-brand img { width: 72px; height: 72px; }
 .social { display: flex; gap: 16px; }
 .social a { color: var(--nero); }

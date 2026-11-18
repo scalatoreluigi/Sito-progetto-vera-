@@ -19,6 +19,19 @@ collections:
         label: "⚙️ Impostazioni, contatti, IBAN, PayPal"
         file: content/impostazioni.json
         fields:
+          - { name: in_costruzione, label: "Mostra l'avviso \"Il sito è in costruzione\"", widget: boolean, default: true }
+          - name: sezioni
+            label: "Sezioni pubblicate (per rivederle prima: aggiungi ?anteprima all'indirizzo del sito)"
+            widget: object
+            fields:
+              - { name: chi_siamo, label: Chi siamo, widget: boolean, default: false }
+              - { name: terapie, label: Terapie e terapisti, widget: boolean, default: false }
+              - { name: galleria, label: Galleria foto, widget: boolean, default: false }
+              - { name: trasparenza, label: Trasparenza, widget: boolean, default: false }
+              - { name: sponsor, label: Sponsor, widget: boolean, default: false }
+              - { name: shop, label: Shop, widget: boolean, default: false }
+              - { name: infermieri, label: Infermieri per le famiglie, widget: boolean, default: false }
+              - { name: dona, label: Sostienici (IBAN, PayPal, 5×1000), widget: boolean, default: false }
           - { name: nome, label: Nome associazione }
           - { name: nome_legale, label: Denominazione ufficiale (come sul RUNTS) }
           - { name: slogan, label: Frase di benvenuto, widget: text }

@@ -19,6 +19,14 @@ Il sito è servito da GitHub Pages; il dominio (registrato su OVH) punta lì. L'
 
 Il cambio si propaga in qualche ora (al massimo 24-48).
 
+## Sito in costruzione e sezioni da pubblicare
+In **Impostazioni** del pannello:
+- **"Il sito è in costruzione"** mostra l'avviso con i link a Instagram e Facebook;
+- **"Sezioni pubblicate"** ha un interruttore per ogni sezione: i visitatori vedono solo quelle accese.
+
+Per rivedere tutto prima di pubblicare, apri il sito con `?anteprima` alla fine dell'indirizzo (es. `https://progettoveraeisuoiamici.it/?anteprima`).
+Le sezioni spente compaiono con un bordo tratteggiato. Non è una protezione: chi conosce il trucco le vede, quindi non metterci nulla di riservato.
+
 ## 2. Gestire i contenuti
 1. Vai su `https://<indirizzo-del-sito>/admin/`.
 2. Accedi con GitHub (la prima volta: "Sign in with token" usando un *Personal access token* di GitHub con permesso "Contents: read and write" su questo repository).

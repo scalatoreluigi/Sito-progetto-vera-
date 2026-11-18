@@ -15,5 +15,16 @@
   "causale": "Erogazione liberale a favore di Progetto Vera e i suoi amici ETS",
   "paypal_email": "progettoveraeisuoiamici@gmail.com",
   "cinque_per_mille": "05163990236",
-  "url_area_infermieri": ""
+  "url_area_infermieri": "",
+  "in_costruzione": true,
+  "sezioni": {
+    "chi_siamo": false,
+    "terapie": false,
+    "galleria": false,
+    "trasparenza": false,
+    "sponsor": false,
+    "shop": false,
+    "infermieri": false,
+    "dona": false
+  }
 }

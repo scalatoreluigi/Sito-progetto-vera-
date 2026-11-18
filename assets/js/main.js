@@ -194,6 +194,52 @@ function renderInfermieri(s) {
   $('#link-famiglie').href = url;
 }
 
+// Sezioni da pubblicare una alla volta (Impostazioni → Sezioni pubblicate nel pannello).
+// Con ?anteprima nell'indirizzo si vedono anche quelle non pubblicate, segnate con un bordo tratteggiato.
+// Non è una protezione: i testi sono comunque nei file del sito.
+const SEZIONI = {
+  chi_siamo: 'chi-siamo', terapie: 'terapie', galleria: 'galleria', trasparenza: 'trasparenza',
+  sponsor: 'sponsor', shop: 'shop', infermieri: 'infermieri', dona: 'dona',
+};
+
+function modalitaAnteprima() {
+  let attiva = /[?&#]anteprima\b/.test(location.search + location.hash);
+  const pubblico = /[?&#]pubblico\b/.test(location.search + location.hash);
+  try {
+    if (pubblico) { sessionStorage.removeItem('anteprima'); return false; }
+    if (attiva) sessionStorage.setItem('anteprima', '1');
+    else attiva = sessionStorage.getItem('anteprima') === '1';
+  } catch (e) { /* senza memoria del browser vale solo l'indirizzo */ }
+  return attiva;
+}
+
+function applicaSezioni(s) {
+  const anteprima = modalitaAnteprima();
+  const pubblicata = (k) => !s.sezioni || s.sezioni[k] !== false;
+  $('#banda-anteprima').hidden = !anteprima;
+  for (const [chiave, id] of Object.entries(SEZIONI)) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    if (pubblicata(chiave)) continue;
+    if (anteprima) el.classList.add('bozza');
+    else el.hidden = true;
+  }
+  // Menu e pulsanti portano solo a sezioni visibili.
+  document.querySelectorAll('.nav a[href^="#"], #cta-sito a[href^="#"]').forEach((a) => {
+    const destinazione = document.getElementById(a.getAttribute('href').slice(1));
+    a.hidden = !destinazione || destinazione.hidden;
+  });
+  const voci = Array.from(document.querySelectorAll('.nav a')).filter((a) => !a.hidden);
+  $('.menu-btn').hidden = !voci.length;
+  $('#cta-sito').hidden = !Array.from(document.querySelectorAll('#cta-sito a')).some((a) => !a.hidden);
+
+  $('#avviso-costruzione').hidden = !s.in_costruzione;
+  $('#cta-instagram').hidden = !s.instagram;
+  $('#cta-instagram').href = s.instagram || '#';
+  $('#cta-facebook').hidden = !s.facebook;
+  $('#cta-facebook').href = s.facebook || '#';
+}
+
 async function init() {
   $('.menu-btn').onclick = () => {
     const open = $('.nav').classList.toggle('open');
@@ -212,6 +258,7 @@ async function init() {
   renderSponsor(sponsor);
   renderShop(shop, settings);
   renderInfermieri(settings);
+  applicaSezioni(settings);
 
   if (location.hash === '#grazie') alert('Grazie di cuore! Il pagamento è andato a buon fine: ti contatteremo a breve.');
 }

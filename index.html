@@ -17,6 +17,7 @@
   <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
+  <div id="banda-anteprima" class="banda-anteprima" hidden>Anteprima per la revisione: le sezioni con il bordo tratteggiato non sono ancora pubblicate. <a href="?pubblico">Vedi il sito come i visitatori</a></div>
   <header class="topbar">
     <a href="#" class="brand"><img src="images/logo-64.png" alt="" width="44" height="44"><span data-bind="nome">Progetto Vera</span></a>
     <button class="menu-btn" aria-label="Apri menu" aria-expanded="false">☰</button>
@@ -33,17 +34,24 @@
 
   <main>
     <section class="hero">
-      <div class="wrap">
-        <div>
-          <p class="eyebrow">Spina bifida · Paralisi cerebrale · Riabilitazione</p>
+      <div class="wrap hero-wrap">
+        <img class="hero-logo" src="images/logo-192.png" alt="Logo di Progetto Vera e i suoi amici" width="120" height="120">
+        <div class="hero-testo">
           <h1 data-bind="nome">Progetto Vera e i suoi amici</h1>
           <p class="lead" data-bind="slogan"></p>
-          <div class="hero-cta">
+          <div id="avviso-costruzione" class="costruzione" hidden>
+            <p><strong>Il sito è in costruzione.</strong> Presto qui troverai le terapie, i terapisti, la trasparenza sui fondi e lo shop solidale.
+              Intanto seguici sui social o scrivici.</p>
+            <div class="hero-cta">
+              <a class="btn" id="cta-instagram" href="#" target="_blank" rel="noopener">Seguici su Instagram</a>
+              <a class="btn btn-ghost" id="cta-facebook" href="#" target="_blank" rel="noopener">Facebook</a>
+            </div>
+          </div>
+          <div class="hero-cta" id="cta-sito">
             <a href="#dona" class="btn">Sostieni le terapie</a>
             <a href="#trasparenza" class="btn btn-ghost">Guarda dove vanno i fondi</a>
           </div>
         </div>
-        <img class="hero-logo" src="images/logo-512.png" alt="Logo di Progetto Vera e i suoi amici: un elefantino nero su un cerchio giallo" width="340" height="340">
       </div>
     </section>
 
