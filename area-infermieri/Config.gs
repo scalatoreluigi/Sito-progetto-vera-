@@ -8,7 +8,7 @@ const ENTE = {
   sede: 'Via Tiro a Segno 9, 37013 Caprino Veronese (VR)',
   email: 'progettoveraeisuoiamici@gmail.com',
   pec: 'associazioneprogettovera@pec.it',
-  sito: 'https://scalatoreluigi.github.io/Sito-progetto-vera-/',
+  sito: 'https://progettoveraeisuoiamici.it/',
 };
 
 const REGOLE = {

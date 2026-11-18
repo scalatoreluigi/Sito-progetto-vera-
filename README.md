@@ -3,10 +3,21 @@
 Sito statico (HTML/CSS/JS, niente database, niente costi di hosting).
 Tutti i testi stanno nei file `content/*.json` e si modificano dal pannello **/admin**, senza toccare il codice.
 
-## 1. Mettere online il sito (una volta sola)
-1. Su GitHub: **Settings → Pages → Source: Deploy from a branch → `main` / root**.
-2. Dopo un minuto il sito è su `https://scalatoreluigi.github.io/Sito-progetto-vera-/`.
-3. (Consigliato) compra un dominio tipo `progettovera.it` (~10 €/anno) e collegalo in Settings → Pages → Custom domain.
+## 1. Mettere online il sito su progettoveraeisuoiamici.it (una volta sola)
+Il sito è servito da GitHub Pages; il dominio (registrato su OVH) punta lì. L'hosting OVH resta per la posta del dominio.
+
+**Su GitHub** (repository → Settings → Pages):
+1. Source: *Deploy from a branch* → `main` / `/ (root)` → Save.
+2. Custom domain: `progettoveraeisuoiamici.it` (già scritto nel file `CNAME`) → Save.
+3. Quando il controllo DNS diventa verde, spunta **Enforce HTTPS**.
+
+**Su OVH** (Web Cloud → Nomi di dominio → progettoveraeisuoiamici.it → Zona DNS):
+- elimina i record `A` e `AAAA` di `progettoveraeisuoiamici.it` e di `www` che puntano all'hosting OVH (178.32.137.139 e 2001:41d0:301:11::29);
+- aggiungi 4 record `A` per il dominio senza prefisso: `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`;
+- aggiungi `www` come `CNAME` verso `scalatoreluigi.github.io.` (con il punto finale);
+- **non toccare** i record `MX` e `TXT` (servono alla posta).
+
+Il cambio si propaga in qualche ora (al massimo 24-48).
 
 ## 2. Gestire i contenuti
 1. Vai su `https://<indirizzo-del-sito>/admin/`.

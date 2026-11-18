@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /area-infermieri/
+Sitemap: https://progettoveraeisuoiamici.it/sitemap.xml

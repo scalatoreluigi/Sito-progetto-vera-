@@ -1,4 +1,6 @@
-# Pannello di gestione del sito. Si apre su https://<indirizzo-del-sito>/admin/
+# Pannello di gestione del sito. Si apre su https://progettoveraeisuoiamici.it/admin/
+site_url: https://progettoveraeisuoiamici.it
+logo_url: /images/logo-192.png
 backend:
   name: github
   repo: scalatoreluigi/Sito-progetto-vera-
