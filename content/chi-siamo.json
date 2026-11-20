@@ -2,17 +2,62 @@
   "titolo": "Chi siamo",
   "storia": "Tutto è nato da Vera, una bambina di Caprino Veronese nata con una forma grave di spina bifida. Mamma Francesca e papà Simone hanno scelto di puntare sulla riabilitazione e, cercando nel mondo le terapie più efficaci, hanno scoperto metodi come DMI e CME, ancora poco diffusi in Italia.\n\nNel giugno 2024 la prima terapista è arrivata dagli Stati Uniti per una settimana di sessioni intensive. Da allora, invece di costringere le famiglie a viaggi costosi all'estero, portiamo i terapisti qui e condividiamo i cicli di terapia tra più bambini: costi divisi, risultati moltiplicati.\n\nQuello che era un gruppo di genitori oggi è un'associazione: dal 2026 Progetto Vera e i suoi amici è un Ente del Terzo Settore iscritto al RUNTS, e la nostra rete conta circa 90 famiglie di bambini con spina bifida, paralisi cerebrale e altre disabilità motorie.",
   "numeri": [
-    { "valore": "90", "etichetta": "famiglie nella rete" },
-    { "valore": "2024", "etichetta": "primo ciclo di terapie in Italia" },
-    { "valore": "100%", "etichetta": "dei fondi rendicontati pubblicamente" }
+    {
+      "valore": "90",
+      "etichetta": "famiglie nella rete, da Veneto, Lombardia, Puglia e Lazio"
+    },
+    {
+      "valore": "8",
+      "etichetta": "bambini seguiti in ogni settimana di terapia intensiva"
+    },
+    {
+      "valore": "2024",
+      "etichetta": "a giugno la prima terapista arrivata dagli Stati Uniti"
+    }
   ],
   "direttivo": [
-    { "nome": "Simone Scala", "ruolo": "Presidente" },
-    { "nome": "Mariateresa Burato", "ruolo": "Vicepresidente" },
-    { "nome": "Nicola Cobelli", "ruolo": "Consigliere" }
+    {
+      "nome": "Simone Scala",
+      "ruolo": "Presidente"
+    },
+    {
+      "nome": "Mariateresa Burato",
+      "ruolo": "Vicepresidente"
+    },
+    {
+      "nome": "Nicola Cobelli",
+      "ruolo": "Consigliere"
+    }
   ],
   "amici": [
-    { "nome": "Un Sorriso Solidale – Malcesine", "descrizione": "Associazione che ha sostenuto il Progetto Vera fin dall'inizio.", "link": "https://www.comunemalcesine.it/amministrazione/enti-e-fondazioni/un-sorriso-solidale" },
-    { "nome": "Le Musagne – Rivoli Veronese", "descrizione": "Gruppo di cittadini che organizza eventi di raccolta fondi per le nostre famiglie.", "link": "" }
+    {
+      "nome": "Un Sorriso Solidale – Malcesine",
+      "descrizione": "Associazione che ha sostenuto il Progetto Vera fin dall'inizio.",
+      "link": "https://www.comunemalcesine.it/amministrazione/enti-e-fondazioni/un-sorriso-solidale"
+    },
+    {
+      "nome": "Le Musagne – Rivoli Veronese",
+      "descrizione": "Gruppo di cittadini che organizza eventi di raccolta fondi per le nostre famiglie.",
+      "link": ""
+    }
+  ],
+  "passi_titolo": "Come trasformiamo una donazione in una settimana di terapia",
+  "passi": [
+    {
+      "titolo": "Raccogliamo",
+      "testo": "Donazioni, eventi con Le Musagne e Un Sorriso Solidale, 5×1000 e shop solidale."
+    },
+    {
+      "titolo": "Invitiamo",
+      "testo": "Terapisti DMI, CME e Feldenkrais dagli Stati Uniti e dalla Francia."
+    },
+    {
+      "titolo": "Condividiamo",
+      "testo": "Una settimana intensiva per 8 bambini: i costi si dividono, i risultati si moltiplicano."
+    },
+    {
+      "titolo": "Rendicontiamo",
+      "testo": "Ogni entrata e ogni uscita pubblicata, con ricevuta e senza dati dei bambini."
+    }
   ]
 }

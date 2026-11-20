@@ -44,6 +44,7 @@ collections:
             widget: object
             fields:
               - { name: chi_siamo, label: Chi siamo, widget: boolean, default: false }
+              - { name: come_funziona, label: Come funziona, widget: boolean, default: false }
               - { name: terapie, label: Terapie e terapisti, widget: boolean, default: false }
               - { name: galleria, label: Galleria foto, widget: boolean, default: false }
               - { name: trasparenza, label: Trasparenza, widget: boolean, default: false }
@@ -54,7 +55,9 @@ collections:
               - { name: dona, label: Sostienici (IBAN, PayPal, 5×1000), widget: boolean, default: false }
           - { name: nome, label: Nome associazione }
           - { name: nome_legale, label: Denominazione ufficiale (come sul RUNTS) }
-          - { name: slogan, label: Frase di benvenuto, widget: text }
+          - { name: titolo_apertura, label: "Titolo di apertura (prima parte)" }
+          - { name: titolo_evidenza, label: "Titolo di apertura (parte in corsivo)" }
+          - { name: slogan, label: "Testo di apertura (la storia in due righe)", widget: text }
           - { name: email, label: Email, required: false }
           - { name: pec, label: PEC }
           - { name: telefono, label: Telefono, required: false }
@@ -67,6 +70,7 @@ collections:
           - { name: intestatario_iban, label: Intestatario del conto, required: false }
           - { name: causale, label: Causale suggerita }
           - { name: paypal_email, label: "Email del conto PayPal che riceve i pagamenti", required: false }
+          - { name: paypal_mensile, label: "Proponi la donazione mensile (serve un conto PayPal Business)", widget: boolean, default: true }
           - { name: cinque_per_mille, label: "Codice fiscale per il 5×1000 (vuoto = nascosto)", required: false }
           - { name: url_area_infermieri, label: "Indirizzo dell'area Infermieri per le famiglie (vuoto = sezione nascosta)", required: false, pattern: ["^(https://script\\.google\\.com/macros/s/[A-Za-z0-9_-]+/exec)?$", "Incolla l'indirizzo che finisce con /exec"] }
 
@@ -82,6 +86,13 @@ collections:
             fields:
               - { name: valore, label: Numero }
               - { name: etichetta, label: Descrizione }
+          - { name: passi_titolo, label: "Titolo di \"Come funziona\"" }
+          - name: passi
+            label: "Come funziona: i passi, in ordine"
+            widget: list
+            fields:
+              - { name: titolo, label: Titolo }
+              - { name: testo, label: Testo, widget: text }
           - name: direttivo
             label: Consiglio direttivo
             widget: list

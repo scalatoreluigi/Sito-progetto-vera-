@@ -20,8 +20,9 @@ function bind(key, value) {
   document.querySelectorAll(`[data-bind="${key}"]`).forEach((el) => { el.textContent = value ?? ''; });
 }
 
-// Apre il checkout PayPal (pulsante "Acquista ora" standard: basta l'email PayPal dell'associazione).
-function paypal(settings, itemName, amount, quantity = 1) {
+// Apre il checkout PayPal con il pulsante standard: basta l'email PayPal dell'associazione.
+// Con { mensile: true } crea una donazione ricorrente ogni mese (serve un conto PayPal Business).
+function paypal(settings, itemName, amount, quantity = 1, opzioni = {}) {
   if (!settings.paypal_email) {
     alert('I pagamenti PayPal non sono ancora attivi. Scrivici a ' + settings.email);
     return;
@@ -29,19 +30,18 @@ function paypal(settings, itemName, amount, quantity = 1) {
   const f = document.createElement('form');
   f.method = 'post';
   f.action = 'https://www.paypal.com/cgi-bin/webscr';
-  const fields = {
-    cmd: '_xclick',
+  const comuni = {
     business: settings.paypal_email,
     item_name: itemName,
-    amount: Number(amount).toFixed(2),
-    quantity,
     currency_code: 'EUR',
     lc: 'IT',
-    no_shipping: '2',
     charset: 'utf-8',
     return: location.origin + location.pathname + '#grazie',
-    cancel_return: location.origin + location.pathname + '#shop',
+    cancel_return: location.origin + location.pathname + (opzioni.mensile ? '#dona' : '#shop'),
   };
+  const fields = opzioni.mensile
+    ? { ...comuni, cmd: '_xclick-subscriptions', a3: Number(amount).toFixed(2), p3: 1, t3: 'M', src: 1, no_note: 1, no_shipping: 1 }
+    : { ...comuni, cmd: '_xclick', amount: Number(amount).toFixed(2), quantity, no_shipping: '2' };
   for (const [k, v] of Object.entries(fields)) {
     const i = document.createElement('input');
     i.type = 'hidden'; i.name = k; i.value = v;
@@ -52,11 +52,21 @@ function paypal(settings, itemName, amount, quantity = 1) {
 }
 
 function renderSettings(s) {
-  ['nome', 'nome_legale', 'slogan', 'sede', 'telefono', 'causale', 'intestatario_iban', 'cinque_per_mille', 'runts'].forEach((k) => bind(k, s[k]));
+  ['nome', 'nome_legale', 'titolo_apertura', 'titolo_evidenza', 'slogan', 'sede', 'telefono', 'causale',
+    'intestatario_iban', 'cinque_per_mille', 'runts'].forEach((k) => { if (s[k] !== undefined) bind(k, s[k]); });
   document.title = s.nome;
   $('#iban').textContent = s.iban || 'IBAN in arrivo';
   $('#copia-iban').hidden = !s.iban;
-  $('#copia-iban').onclick = () => navigator.clipboard?.writeText(s.iban.replace(/\s/g, '')).then(() => { $('#copia-iban').textContent = 'Copiato!'; });
+  $('#copia-iban').onclick = (e) => {
+    const bottone = e.currentTarget;
+    const seleziona = () => {
+      const r = document.createRange(); r.selectNodeContents($('#iban'));
+      const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+      bottone.textContent = 'Selezionato: copia con Ctrl+C';
+    };
+    try { navigator.clipboard.writeText(s.iban.replace(/\s/g, '')).then(() => { bottone.textContent = 'IBAN copiato'; }, seleziona); }
+    catch (err) { seleziona(); }
+  };
   $('#mail').href = 'mailto:' + (s.email || s.pec);
   $('#mail').textContent = s.email || '';
   $('#mail').hidden = !s.email;
@@ -69,44 +79,75 @@ function renderSettings(s) {
   $('#ig').href = s.instagram || '#';
   $('#ig').hidden = !s.instagram;
   $('#box-5x1000').hidden = !s.cinque_per_mille;
-  $('#dona-paypal').onsubmit = (e) => {
-    e.preventDefault();
-    paypal(s, 'Erogazione liberale – ' + s.nome, $('#importo-dono').value);
+  impostaDono(s);
+}
+
+// Dono: "ogni mese" come scelta proposta (si spegne dal pannello con "PayPal mensile"), importi tondi, "Altro" libero.
+function impostaDono(s) {
+  const permetteMensile = s.paypal_mensile !== false;
+  let mensile = permetteMensile;
+  let importo = 25;
+  $('#frequenza').hidden = !permetteMensile;
+  if (!permetteMensile) $('#dona-intro').textContent = "Ogni donazione va alle terapie dei bambini e la trovi rendicontata in Trasparenza.";
+  const valore = () => (importo === 'altro' ? Math.max(1, parseInt($('#importo-altro').value, 10) || 0) : importo);
+  const aggiorna = () => { $('#invia-dono').textContent = `Dona ${euroTondi(valore())}${mensile ? ' al mese' : ''} con PayPal`; };
+  const scegliFrequenza = (m) => {
+    mensile = m;
+    $('#freq-mese').setAttribute('aria-pressed', String(m));
+    $('#freq-una').setAttribute('aria-pressed', String(!m));
+    aggiorna();
   };
+  $('#freq-mese').onclick = () => scegliFrequenza(true);
+  $('#freq-una').onclick = () => scegliFrequenza(false);
+  document.querySelectorAll('.importi button').forEach((b) => {
+    b.onclick = () => {
+      document.querySelectorAll('.importi button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      importo = b.dataset.importo === 'altro' ? 'altro' : Number(b.dataset.importo);
+      $('#box-altro').hidden = importo !== 'altro';
+      if (importo === 'altro') $('#importo-altro').focus();
+      aggiorna();
+    };
+  });
+  $('#importo-altro').oninput = aggiorna;
+  $('#modulo-dono').onsubmit = (e) => {
+    e.preventDefault();
+    paypal(s, (mensile ? 'Donazione mensile – ' : 'Erogazione liberale – ') + s.nome, valore(), 1, { mensile });
+  };
+  aggiorna();
 }
 
 function renderChiSiamo(c) {
   bind('chi.titolo', c.titolo);
+  bind('chi.passi_titolo', c.passi_titolo || 'Come funziona');
   $('#storia').innerHTML = paragrafi(c.storia);
-  $('#numeri').innerHTML = (c.numeri || []).map((n) => `
-    <div class="stat"><span class="stat-num">${esc(n.valore)}</span><span class="stat-label">${esc(n.etichetta)}</span></div>`).join('');
-  $('#direttivo').innerHTML = (c.direttivo || []).map((p) => `
-    <div class="card"><span class="tag">${esc(p.ruolo)}</span><h3>${esc(p.nome)}</h3></div>`).join('');
+  $('#numeri').innerHTML = (c.numeri || []).map((n) =>
+    `<p class="numero"><b>${esc(n.valore)}</b><span>${esc(n.etichetta)}</span></p>`).join('');
+  $('#direttivo').innerHTML = (c.direttivo || []).map((p) =>
+    `<li><strong>${esc(p.nome)}</strong><span class="etichetta">${esc(p.ruolo)}</span></li>`).join('');
   $('#amici').innerHTML = (c.amici || []).map((a) => `
-    <div class="card">
-      <h3>${a.link ? `<a href="${esc(a.link)}" target="_blank" rel="noopener">${esc(a.nome)}</a>` : esc(a.nome)}</h3>
-      <p class="muted">${esc(a.descrizione)}</p>
-    </div>`).join('');
+    <li><strong>${a.link ? `<a href="${esc(a.link)}" target="_blank" rel="noopener">${esc(a.nome)}</a>` : esc(a.nome)}</strong>
+      <p>${esc(a.descrizione)}</p></li>`).join('');
+  $('#passi').innerHTML = (c.passi || []).map((p) => `<li><h3>${esc(p.titolo)}</h3><p>${esc(p.testo)}</p></li>`).join('');
 }
 
 function renderTerapie(t) {
   $('#lista-terapie').innerHTML = (t.terapie || []).map((x) => `
-    <div class="card terapia">
-      ${x.immagine ? `<img src="${esc(x.immagine)}" alt="">` : ''}
+    <div class="metodo">
+      ${x.immagine ? `<img src="${esc(x.immagine)}" alt="" loading="lazy">` : ''}
       <h3>${esc(x.nome)}</h3>
-      <p class="muted">${esc(x.descrizione)}</p>
+      <p>${esc(x.descrizione)}</p>
     </div>`).join('');
-  // Come i post Instagram: foto grande su fondo giallo, nome in evidenza, descrizione sotto.
+  // Come i post Instagram: foto grande, nome in evidenza, descrizione sotto.
   // Senza foto (o senza consenso) al posto della foto c'è l'elefantino del logo.
   $('#lista-terapisti').innerHTML = (t.terapisti || []).map((x) => `
-    <figure class="terapista">
-      <p class="etichetta">Terapisti invitati</p>
+    <figure class="post">
+      <p class="intestazione">Terapisti invitati</p>
       ${x.foto && x.consenso_foto
         ? `<img class="foto" src="${esc(x.foto)}" alt="${esc(x.nome)}" loading="lazy">`
-        : '<div class="foto-vuota"><img src="images/logo-192.png" alt=""></div>'}
+        : '<div class="foto-vuota"><img src="images/elefante-destra.png" alt=""></div>'}
       <figcaption>
         <h3>${esc(x.nome)}</h3>
-        <span class="tag">${esc(x.ruolo)}${x.provenienza ? ' · ' + esc(x.provenienza) : ''}</span>
+        <span class="etichetta">${esc(x.ruolo)}${x.provenienza ? ' · ' + esc(x.provenienza) : ''}</span>
         <p>${esc(x.descrizione)}</p>
         ${x.link ? `<p><a href="${esc(x.link)}" target="_blank" rel="noopener">Scopri di più</a></p>` : ''}
       </figcaption>
@@ -118,7 +159,7 @@ function renderGalleria(g) {
   const foto = (g.foto || []).filter((f) => f.immagine && f.consenso_scritto);
   $('#galleria').hidden = !foto.length;
   $('#foto').innerHTML = foto.map((f) => `
-    <figure class="card"><img src="${esc(f.immagine)}" alt="${esc(f.didascalia)}"><figcaption class="small muted">${esc(f.didascalia)}</figcaption></figure>`).join('');
+    <figure><img src="${esc(f.immagine)}" alt="${esc(f.didascalia)}" loading="lazy"><figcaption>${esc(f.didascalia)}</figcaption></figure>`).join('');
 }
 
 function renderTrasparenza(t) {
@@ -130,21 +171,23 @@ function renderTrasparenza(t) {
   const draw = () => {
     const anno = $('#anno').value;
     const lista = movimenti.filter((m) => !anno || m.data.startsWith(anno));
-    const entrate = lista.filter((m) => m.tipo === 'entrata').reduce((s, m) => s + Number(m.importo), 0);
-    const uscite = lista.filter((m) => m.tipo === 'uscita').reduce((s, m) => s + Number(m.importo), 0);
-    $('#tot-entrate').textContent = euro(entrate);
-    $('#tot-uscite').textContent = euro(uscite);
-    $('#saldo').textContent = euro(entrate - uscite);
-    const pct = entrate ? Math.min(100, Math.round((uscite / entrate) * 100)) : 0;
-    $('#bar-fill').style.width = pct + '%';
-    $('#bar-label').textContent = entrate ? `Il ${pct}% dei fondi raccolti è già stato speso in terapie.` : '';
+    const entrate = lista.filter((m) => m.tipo === 'entrata');
+    const uscite = lista.filter((m) => m.tipo === 'uscita');
+    const somma = (l) => l.reduce((s, m) => s + Number(m.importo), 0);
+    const conRicevuta = uscite.filter((m) => m.documento).length;
+    $('#tot-uscite').textContent = euroTondi(somma(uscite));
+    $('#nota-uscite').textContent = `${uscite.length} ${uscite.length === 1 ? 'uscita' : 'uscite'}${anno ? ' nel ' + anno : ''}`;
+    $('#tot-entrate').textContent = euroTondi(somma(entrate));
+    $('#nota-entrate').textContent = `${entrate.length} ${entrate.length === 1 ? 'entrata' : 'entrate'}${anno ? ' nel ' + anno : ''}`;
+    $('#saldo').textContent = euroTondi(somma(entrate) - somma(uscite));
+    $('#ricevute').textContent = uscite.length ? Math.round((conRicevuta / uscite.length) * 100) + '%' : '–';
     $('#movimenti').innerHTML = lista.map((m) => `
       <tr>
         <td>${dataIt(m.data)}</td>
         <td>${esc(m.descrizione)}</td>
-        <td class="num ${m.tipo === 'entrata' ? 'pos' : 'neg'}">${m.tipo === 'entrata' ? '+' : '−'}${euro(m.importo)}</td>
+        <td class="cifra ${m.tipo === 'entrata' ? 'entrata' : 'uscita'}">${m.tipo === 'entrata' ? '+' : '−'}${euro(m.importo)}</td>
         <td>${m.documento ? `<a href="${esc(m.documento)}" target="_blank" rel="noopener">Vedi</a>` : ''}</td>
-      </tr>`).join('') || '<tr><td colspan="4" class="muted">Nessun movimento.</td></tr>';
+      </tr>`).join('') || '<tr><td colspan="4">Nessun movimento.</td></tr>';
   };
   $('#anno').onchange = draw;
   draw();
@@ -154,9 +197,11 @@ function renderSponsor(s) {
   const ordine = { oro: 0, argento: 1, bronzo: 2 };
   const lista = (s.sponsor || []).slice().sort((a, b) => (ordine[a.livello] ?? 3) - (ordine[b.livello] ?? 3));
   $('#lista-sponsor').innerHTML = lista.map((x) => {
-    const inner = `${x.logo ? `<img src="${esc(x.logo)}" alt="${esc(x.nome)}">` : `<h3>${esc(x.nome)}</h3>`}
-      <p class="muted small">${esc(x.descrizione)}</p>`;
-    return `<div class="card ${esc(x.livello)}">${x.sito ? `<a href="${esc(x.sito)}" target="_blank" rel="noopener">${inner}</a>` : inner}</div>`;
+    const inner = `${x.logo ? `<img src="${esc(x.logo)}" alt="${esc(x.nome)}" loading="lazy">` : `<h3>${esc(x.nome)}</h3>`}
+      ${x.descrizione ? `<p>${esc(x.descrizione)}</p>` : ''}`;
+    return x.sito
+      ? `<a class="sponsor-scheda ${esc(x.livello)}" href="${esc(x.sito)}" target="_blank" rel="noopener">${inner}</a>`
+      : `<div class="sponsor-scheda ${esc(x.livello)}">${inner}</div>`;
   }).join('');
 }
 
@@ -166,22 +211,24 @@ function renderShop(shop, settings) {
   $('#prodotti').innerHTML = prodotti.map((p, i) => {
     const varianti = String(p.varianti || '').split(',').map((v) => v.trim()).filter(Boolean);
     return `
-    <div class="card">
-      ${p.immagine ? `<img src="${esc(p.immagine)}" alt="${esc(p.nome)}">` : ''}
+    <div class="prodotto">
+      <div class="immagine">${p.immagine
+        ? `<img src="${esc(p.immagine)}" alt="${esc(p.nome)}" loading="lazy">`
+        : '<img class="segnaposto" src="images/elefante-destra.png" alt="">'}</div>
       <h3>${esc(p.nome)}</h3>
-      <p class="muted">${esc(p.descrizione)}</p>
-      <p class="price">${euro(p.prezzo)}</p>
-      <div class="row">
-        ${varianti.length ? `<select data-variante="${i}" aria-label="Variante">${varianti.map((v) => `<option>${esc(v)}</option>`).join('')}</select>` : ''}
-        <input type="number" min="1" value="1" data-qta="${i}" aria-label="Quantità">
-        <button class="btn btn-small" data-compra="${i}" ${p.disponibile === false ? 'disabled' : ''}>
+      <p>${esc(p.descrizione)}</p>
+      <p class="prezzo">${euro(p.prezzo)}</p>
+      <div class="riga-acquisto">
+        ${varianti.length ? `<select data-variante="${i}" aria-label="Variante di ${esc(p.nome)}">${varianti.map((v) => `<option>${esc(v)}</option>`).join('')}</select>` : ''}
+        <input type="number" min="1" value="1" data-qta="${i}" aria-label="Quantità di ${esc(p.nome)}">
+        <button class="btn" type="button" data-compra="${i}" ${p.disponibile === false ? 'disabled' : ''}>
           ${p.disponibile === false ? 'Esaurito' : 'Acquista con PayPal'}
         </button>
       </div>
     </div>`;
   }).join('');
   $('#prodotti').onclick = (e) => {
-    const i = e.target.dataset.compra;
+    const i = e.target.closest('[data-compra]')?.dataset.compra;
     if (i === undefined) return;
     const p = prodotti[i];
     const variante = document.querySelector(`[data-variante="${i}"]`)?.value;
@@ -194,7 +241,6 @@ function renderShop(shop, settings) {
 function renderInfermieri(s) {
   const url = /^https:\/\//.test(s.url_area_infermieri || '') ? s.url_area_infermieri : '';
   $('#infermieri').hidden = !url;
-  $('.link-infermieri').hidden = !url;
   if (!url) return;
   $('#link-adesione').href = url + '?p=adesione';
   $('#link-famiglie').href = url;
@@ -242,7 +288,7 @@ function renderRaccolta(r) {
 // Con ?anteprima nell'indirizzo si vedono anche quelle non pubblicate, segnate con un bordo tratteggiato.
 // Non è una protezione: i testi sono comunque nei file del sito.
 const SEZIONI = {
-  chi_siamo: 'chi-siamo', terapie: 'terapie', galleria: 'galleria', trasparenza: 'trasparenza',
+  chi_siamo: 'chi-siamo', come_funziona: 'come-funziona', terapie: 'terapie', galleria: 'galleria', trasparenza: 'trasparenza',
   sponsor: 'sponsor', shop: 'shop', infermieri: 'infermieri', raccolta: 'raccolta', dona: 'dona',
 };
 
@@ -287,7 +333,7 @@ function applicaSezioni(s) {
 async function init() {
   $('.menu-btn').onclick = () => {
     const open = $('.nav').classList.toggle('open');
-    $('.menu-btn').setAttribute('aria-expanded', open);
+    $('.menu-btn').setAttribute('aria-expanded', String(open));
   };
   document.querySelectorAll('.nav a').forEach((a) => { a.onclick = () => $('.nav').classList.remove('open'); });
 

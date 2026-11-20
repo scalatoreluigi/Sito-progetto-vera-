@@ -53,6 +53,9 @@ Sezioni del pannello:
 Basta inserire in Impostazioni l'**email del conto PayPal** (meglio un conto Business intestato all'associazione).
 Finché è vuota, i pulsanti mostrano un avviso invece di pagare. Ogni ordine ti arriva via email da PayPal con nome, indirizzo e prodotto.
 
+**Donazione mensile:** nella sezione Sostienici "Ogni mese" è la scelta proposta. Crea un pagamento ricorrente su PayPal, e per questo serve un **conto PayPal Business**.
+Prima di pubblicare la sezione, fai una prova con 1 € al mese e poi annullala dal tuo PayPal. Se PayPal dà errore, spegni "Proponi la donazione mensile" in Impostazioni: resta la donazione singola.
+
 ## Area "Infermieri per le famiglie"
 È nella cartella `area-infermieri/`. Funziona con un Foglio Google privato e Google Apps Script, perché i dati non possono stare in questo repository pubblico.
 Le famiglie chiedono un infermiere con un modulo, l'associazione riceve un'email con i contatti adatti e richiama. Installazione e uso: `area-infermieri/LEGGIMI.md`. Finché nel pannello non inserisci l'indirizzo dell'area, la sezione resta nascosta sul sito.
