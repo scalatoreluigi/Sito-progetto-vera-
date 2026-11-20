@@ -1,0 +1,32 @@
+{
+  "esempio": true,
+  "titolo": "Settimana DMI con terapista dagli Stati Uniti",
+  "etichette": [
+    "8 bambini",
+    "5 giorni",
+    "Verona",
+    "Marzo"
+  ],
+  "obiettivo": 6000,
+  "raccolto": 3900,
+  "aggiornato_il": "2026-11-20",
+  "nota": "Quando arriviamo al 100% fissiamo le date con la terapista e lo scriviamo qui.",
+  "voci": [
+    {
+      "descrizione": "Compenso della terapista",
+      "importo": 3600
+    },
+    {
+      "descrizione": "Volo e alloggio",
+      "importo": 1500
+    },
+    {
+      "descrizione": "Sala e attrezzatura",
+      "importo": 600
+    },
+    {
+      "descrizione": "Assicurazione e spese",
+      "importo": 300
+    }
+  ]
+}

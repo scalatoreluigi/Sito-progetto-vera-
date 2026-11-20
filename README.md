@@ -27,6 +27,13 @@ In **Impostazioni** del pannello:
 Per rivedere tutto prima di pubblicare, apri il sito con `?anteprima` alla fine dell'indirizzo (es. `https://progettoveraeisuoiamici.it/?anteprima`).
 Le sezioni spente compaiono con un bordo tratteggiato. Non è una protezione: chi conosce il trucco le vede, quindi non metterci nulla di riservato.
 
+## Aggiornare la raccolta in corso (1 minuto, anche da telefono)
+Pannello `/admin` → **⚡ Raccolta in corso**: cambia **Raccolto finora** e **Aggiornato il**, poi Salva. Il sito si aggiorna in 1-2 minuti.
+- La barra, l'elefantino e "mancano … €" si calcolano da soli; al 100% compare "obiettivo raggiunto".
+- **Se non aggiorni per più di 30 giorni la barra sparisce** e il sito scrive che le cifre sono in aggiornamento: meglio nessun numero che un numero vecchio.
+- Finché i numeri sono di prova lascia la spunta **ESEMPIO**; toglila quando metti quelli veri.
+- La sezione si accende in Impostazioni → Sezioni pubblicate → *Prossima settimana di terapia*.
+
 ## 2. Gestire i contenuti
 1. Vai su `https://<indirizzo-del-sito>/admin/`.
 2. Accedi con GitHub (la prima volta: "Sign in with token" usando un *Personal access token* di GitHub con permesso "Contents: read and write" su questo repository).

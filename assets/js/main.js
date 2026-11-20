@@ -1,7 +1,13 @@
 // Il sito legge tutti i testi dai file in /content (modificabili dal pannello /admin).
 const $ = (s) => document.querySelector(s);
 const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const euro = (n) => new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(n || 0);
+// Euro all'italiana con il punto delle migliaia anche sotto i 10.000 (Intl scrive "1500,00 €").
+const migliaia = (s) => s.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+const euro = (n) => {
+  const [interi, decimali] = Math.abs(Number(n) || 0).toFixed(2).split('.');
+  return (Number(n) < 0 ? '−' : '') + migliaia(interi) + ',' + decimali + ' €';
+};
+const euroTondi = (n) => migliaia(String(Math.round(Number(n) || 0))) + ' €';
 const dataIt = (d) => new Date(d).toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' });
 const paragrafi = (t) => String(t || '').split(/\n\s*\n/).map((p) => `<p>${esc(p)}</p>`).join('');
 
@@ -194,12 +200,50 @@ function renderInfermieri(s) {
   $('#link-famiglie').href = url;
 }
 
+// Prossima settimana di terapia. Le cifre si aggiornano dal pannello (Raccolta in corso).
+// Se non vengono aggiornate da più di GIORNI_VALIDITA_RACCOLTA giorni, la barra sparisce: meglio nessun numero che un numero vecchio.
+const GIORNI_VALIDITA_RACCOLTA = 30;
+
+function statoRaccolta(r, oggi = new Date()) {
+  const obiettivo = Number(r.obiettivo) || 0;
+  const raccolto = Math.max(0, Number(r.raccolto) || 0);
+  const aggiornato = r.aggiornato_il ? new Date(r.aggiornato_il + 'T12:00:00') : null;
+  const giorni = aggiornato ? Math.floor((oggi - aggiornato) / 86400000) : Infinity;
+  return {
+    obiettivo,
+    raccolto,
+    quota: obiettivo ? Math.min(100, Math.round((raccolto / obiettivo) * 100)) : 0,
+    mancano: Math.max(0, obiettivo - raccolto),
+    vecchia: !(giorni <= GIORNI_VALIDITA_RACCOLTA),
+    aggiornato,
+  };
+}
+
+function renderRaccolta(r) {
+  const s = statoRaccolta(r);
+  const esempio = r.esempio ? ' <span class="esempio">esempio</span>' : '';
+  $('#raccolta-titolo').innerHTML = esc(r.titolo) + esempio;
+  $('#raccolta-etichette').innerHTML = (r.etichette || []).map((e) => `<span>${esc(e)}</span>`).join('');
+  $('#raccolta-raccolto').textContent = euroTondi(s.raccolto);
+  $('#raccolta-di').innerHTML = s.mancano
+    ? `su ${euroTondi(s.obiettivo)} · mancano <strong>${euroTondi(s.mancano)}</strong>`
+    : `su ${euroTondi(s.obiettivo)} · <strong>obiettivo raggiunto, grazie!</strong>`;
+  $('#raccolta-pista').style.setProperty('--quota', s.quota + '%');
+  $('#raccolta-pista').setAttribute('aria-label', `Raccolto il ${s.quota} per cento dell'obiettivo`);
+  $('#raccolta-data').textContent = s.aggiornato ? 'Aggiornato il ' + s.aggiornato.toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+  $('#raccolta-numeri').hidden = s.vecchia;
+  $('#raccolta-ferma').hidden = !s.vecchia;
+  $('#raccolta-nota').textContent = r.nota || '';
+  $('#raccolta-voci').innerHTML = (r.voci || []).map((v) =>
+    `<li><span>${esc(v.descrizione)}</span><span>${euroTondi(Number(v.importo) || 0)}</span></li>`).join('');
+}
+
 // Sezioni da pubblicare una alla volta (Impostazioni → Sezioni pubblicate nel pannello).
 // Con ?anteprima nell'indirizzo si vedono anche quelle non pubblicate, segnate con un bordo tratteggiato.
 // Non è una protezione: i testi sono comunque nei file del sito.
 const SEZIONI = {
   chi_siamo: 'chi-siamo', terapie: 'terapie', galleria: 'galleria', trasparenza: 'trasparenza',
-  sponsor: 'sponsor', shop: 'shop', infermieri: 'infermieri', dona: 'dona',
+  sponsor: 'sponsor', shop: 'shop', infermieri: 'infermieri', raccolta: 'raccolta', dona: 'dona',
 };
 
 function modalitaAnteprima() {
@@ -247,8 +291,8 @@ async function init() {
   };
   document.querySelectorAll('.nav a').forEach((a) => { a.onclick = () => $('.nav').classList.remove('open'); });
 
-  const [settings, chi, terapie, galleria, trasparenza, sponsor, shop] = await Promise.all(
-    ['impostazioni', 'chi-siamo', 'terapie', 'galleria', 'trasparenza', 'sponsor', 'shop'].map(load)
+  const [settings, chi, terapie, galleria, trasparenza, sponsor, shop, raccolta] = await Promise.all(
+    ['impostazioni', 'chi-siamo', 'terapie', 'galleria', 'trasparenza', 'sponsor', 'shop', 'raccolta'].map(load)
   );
   renderSettings(settings);
   renderChiSiamo(chi);
@@ -257,6 +301,7 @@ async function init() {
   renderTrasparenza(trasparenza);
   renderSponsor(sponsor);
   renderShop(shop, settings);
+  renderRaccolta(raccolta);
   renderInfermieri(settings);
   applicaSezioni(settings);
 

@@ -25,6 +25,7 @@
     "sponsor": false,
     "shop": false,
     "infermieri": false,
+    "raccolta": false,
     "dona": false
   }
 }

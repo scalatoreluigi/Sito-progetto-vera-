@@ -95,6 +95,7 @@ img { max-width: 100%; display: block; }
 .banda-anteprima { background: var(--nero); color: var(--giallo); text-align: center; padding: 8px 16px; font-size: .9rem; }
 .banda-anteprima a { color: #fff; margin-left: 6px; }
 .bozza { outline: 3px dashed var(--nero); outline-offset: -12px; position: relative; }
+.raccolta.bozza, .donate.bozza { outline-color: var(--giallo); }
 .bozza::before {
   content: "Non ancora pubblicata"; position: absolute; top: 20px; right: 24px; z-index: 1;
   background: var(--nero); color: var(--giallo); font: .75rem/1 var(--maiuscole); letter-spacing: .1em;
@@ -158,6 +159,36 @@ th { font-size: .8rem; color: var(--muted); background: var(--giallo-chiaro); }
 .price { font-family: var(--titoli); font-size: 1.5rem; font-weight: 600; font-variant-numeric: lining-nums; }
 .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .row input[type=number] { width: 90px; }
+
+/* Prossima settimana di terapia: nero, con l'elefantino che cammina sulla barra */
+.raccolta { background: var(--nero); color: #f5f1e6; }
+.raccolta h2 { color: #fff; }
+.raccolta h3 { color: var(--giallo); font-size: clamp(1.5rem, 3vw, 2.1rem); }
+.raccolta-etichetta { color: var(--giallo); font-size: .8rem; margin: 0 0 10px; }
+.raccolta-griglia { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: clamp(28px, 5vw, 64px); margin-top: 32px; }
+@media (max-width: 760px) { .raccolta-griglia { grid-template-columns: 1fr; } }
+.raccolta-tag { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 20px; }
+.raccolta-tag span { border: 1px solid #45463f; border-radius: 999px; padding: 4px 12px; font-size: .9rem; }
+.raccolta-cifre { margin: 0; font-variant-numeric: lining-nums tabular-nums; }
+.raccolta-raccolto { font-family: var(--titoli); font-size: clamp(2.2rem, 5vw, 3.4rem); color: var(--giallo); font-weight: 600; }
+.pista { position: relative; height: 14px; background: #2a2b2f; border-radius: 999px; margin: 52px 0 12px; }
+.pista-fatto { position: absolute; inset: 0 auto 0 0; width: var(--quota, 0%); background: var(--giallo); border-radius: 999px; }
+.pista-elefante { position: absolute; bottom: calc(100% + 3px); left: var(--quota, 0%); width: 64px; height: auto; transform: translateX(-50%); }
+@media (prefers-reduced-motion: no-preference) {
+  .pista-fatto { animation: pista-riempi 1.8s cubic-bezier(.3, .7, .3, 1) both .3s; }
+  .pista-elefante { animation: pista-cammina 1.8s cubic-bezier(.3, .7, .3, 1) both .3s, pista-dondola .35s ease-in-out .3s 6 alternate; }
+  @keyframes pista-riempi { from { width: 0; } }
+  @keyframes pista-cammina { from { left: 0; } }
+  @keyframes pista-dondola { to { transform: translateX(-50%) rotate(4deg); } }
+}
+.raccolta-data { color: #c9c3b3; margin: 0; }
+.raccolta-ferma { background: #1c1d21; border: 1px dashed var(--giallo); border-radius: 12px; padding: 14px 16px; }
+.raccolta-nota { color: #c9c3b3; margin: 16px 0 20px; }
+.raccolta .btn { background: var(--giallo); color: var(--nero); border-color: var(--giallo); }
+.raccolta-voci { list-style: none; margin: 0; padding: 0; border-top: 1px solid #45463f; }
+.raccolta-voci li { display: flex; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px solid #45463f; font-variant-numeric: tabular-nums; }
+.raccolta-voci li span:last-child { white-space: nowrap; }
+.raccolta .esempio { display: inline-block; font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; border: 1.5px dashed currentColor; border-radius: 999px; padding: 3px 8px; vertical-align: middle; color: var(--giallo); }
 
 /* Sostienici: nero, con i pulsanti gialli */
 .donate { background: var(--nero); color: #f5f1e6; }
